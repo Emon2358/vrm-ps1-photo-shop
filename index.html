@@ -3,26 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GHOST_PROTOCOL_VJ_V5_LIQUID_WAVE</title>
+    <title>GHOST_PROTOCOL_V6_DOOMSDAY</title>
     <link rel="icon" href="data:,">
 
     <style>
-        /* --- UNDERGROUND STYLING --- */
+        /* --- VOID STYLING --- */
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
-            background-color: #000000; overflow: hidden;
+            background-color: #000; overflow: hidden;
             font-family: 'Courier New', Courier, monospace;
         }
 
-        /* 背景の砂嵐ノイズ */
-        .static-noise {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            opacity: 0.15; z-index: 0; pointer-events: none;
-            background: url('https://media.giphy.com/media/oEI9uBYSzLpBK/giphy.gif');
-            background-size: cover;
-            filter: grayscale(100%) contrast(200%);
-        }
-
+        /* 純粋な黒背景 */
         #canvas {
             display: block; position: absolute; top: 0; left: 0; z-index: 1;
         }
@@ -32,55 +24,44 @@
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 10; pointer-events: none;
             padding: 20px; box-sizing: border-box;
-            color: #00ffcc; /* シアンに変更 */
-            text-shadow: 0 0 5px #00ffcc;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 30%);
+            color: #fff;
+            mix-blend-mode: difference; /* 背景が白くなっても文字が見えるように */
         }
 
         h1 { 
-            font-size: 1.6rem; margin: 0; letter-spacing: 5px; 
-            border-bottom: 2px solid #00ffcc; display: inline-block; background: rgba(0,0,0,0.8);
+            font-size: 2rem; margin: 0; letter-spacing: 8px; font-weight: 900;
+            border-bottom: 4px solid #fff; display: inline-block;
+            animation: shake 0.1s infinite;
         }
+        @keyframes shake { 0% { transform: translate(0,0); } 100% { transform: translate(2px, -2px); } }
 
-        p { 
-            font-size: 0.8rem; margin: 5px 0; background: rgba(0,0,0,0.8); display: inline-block; 
-            color: #fff; text-shadow: 0 0 3px #fff;
-        }
+        p { font-size: 0.9rem; font-weight: bold; background: #fff; color: #000; display: inline-block; padding: 2px; }
 
-        /* Controls */
         .controls {
-            margin-top: 20px; pointer-events: auto; display: flex; gap: 10px; flex-wrap: wrap;
+            margin-top: 40px; pointer-events: auto; display: flex; gap: 15px; flex-wrap: wrap;
         }
 
         .cyber-btn {
-            padding: 10px 20px; border: 2px solid #00ffcc; background: #000;
-            color: #00ffcc; cursor: pointer; font-weight: bold; font-family: inherit;
-            transition: 0.1s; text-transform: uppercase;
-            min-width: 120px; text-align: center;
-            box-shadow: 0 0 5px rgba(0,255,204,0.3);
+            padding: 15px 30px; border: 3px solid #fff; background: #000;
+            color: #fff; cursor: pointer; font-weight: 900; font-family: inherit;
+            text-transform: uppercase; font-size: 1rem;
+            transition: 0.05s;
         }
-        .cyber-btn:hover { background: #00ffcc; color: #000; box-shadow: 0 0 20px #00ffcc;}
-        .cyber-btn.active { background: #00ffcc; color: #000; box-shadow: 0 0 25px #00ffcc; }
-        .cyber-btn:disabled { opacity: 0.2; cursor: not-allowed; border-color: #555; color: #555; }
-
-        #btn-rec { border-color: #ff0055; color: #ff0055; }
-        #btn-rec:hover { background: #ff0055; color: #000; }
-        #btn-rec.active { background: #ff0055; color: #fff; box-shadow: 0 0 20px #ff0055; }
+        .cyber-btn:hover { background: #fff; color: #000; transform: scale(1.1); }
+        .cyber-btn.active { background: #f00; color: #fff; border-color: #f00; }
+        .cyber-btn:disabled { opacity: 0.2; cursor: not-allowed; }
 
         #status-log {
             position: absolute; bottom: 20px; left: 20px; 
-            font-size: 0.7rem; color: #fff; white-space: pre;
-            background: rgba(0,0,0,0.9); padding: 5px;
-            border: 1px dashed #00ffcc;
+            font-size: 0.8rem; font-weight: bold; white-space: pre;
         }
 
         #rec-indicator {
             display: none; position: absolute; top: 20px; right: 20px;
-            color: #ff0055; font-weight: bold; animation: blinkFast 0.05s infinite;
-            background: rgba(0,0,0,0.8); padding: 5px; border: 2px solid #ff0055;
-            font-size: 1.4rem;
+            color: #f00; font-size: 2rem; font-weight: 900;
+            animation: blink 0.05s infinite; border: 5px solid #f00; padding: 10px;
         }
-        @keyframes blinkFast { 0% { opacity: 1; } 50% { opacity: 0.3; } }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } }
 
         input[type="file"] { display: none; }
     </style>
@@ -96,29 +77,26 @@
     </script>
 </head>
 <body>
-    <div class="static-noise"></div>
-
     <div id="ui-layer">
-        <h1>V5.0: LIQUID_WAVE_PROTOCOL</h1>
-        <div>
-            <p>>> SENSITIVITY: HYPER (RAW DATA)</p><br>
-            <p>>> EFFECT: HEAVY DISTORTION</p>
-        </div>
+        <h1>V6: DOOMSDAY</h1>
+        <br><br>
+        <p>!!! WARNING: EPILEPSY HAZARD !!!</p>
+        <br>
+        <p>>> SENSITIVITY: INFINITE</p>
 
         <div class="controls">
             <input type="file" id="vrm-input" accept=".vrm">
-            <label for="vrm-input" class="cyber-btn">1. LOAD VRM</label>
+            <label for="vrm-input" class="cyber-btn">LOAD VRM</label>
             
             <input type="file" id="audio-input" accept=".mp3, .wav, .flac, .m4a">
-            <label for="audio-input" class="cyber-btn">2. LOAD AUDIO</label>
+            <label for="audio-input" class="cyber-btn">LOAD AUDIO</label>
 
-            <button id="btn-play" class="cyber-btn" disabled>PLAY / PAUSE</button>
-            
-            <button id="btn-rec" class="cyber-btn">REC START</button>
+            <button id="btn-play" class="cyber-btn" disabled>INITIATE</button>
+            <button id="btn-rec" class="cyber-btn">REC</button>
         </div>
 
-        <div id="rec-indicator">!! REC !!</div>
-        <div id="status-log">SYSTEM READY.</div>
+        <div id="rec-indicator">RECORDING</div>
+        <div id="status-log">WAITING FOR TARGET...</div>
     </div>
 
     <canvas id="canvas"></canvas>
@@ -133,42 +111,31 @@
         import { VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm';
 
         const logDiv = document.getElementById('status-log');
-        const log = (msg) => { 
-            logDiv.innerText = `>> ${msg}\n` + logDiv.innerText.substring(0, 100); 
-            console.log(msg); 
-        };
+        const log = (msg) => { logDiv.innerText = `>> ${msg}`; console.log(msg); };
 
-        // --- 1. SCENE SETUP ---
+        // --- 1. SCENE ---
         const canvas = document.getElementById('canvas');
         const scene = new THREE.Scene();
-        scene.background = null; 
+        scene.background = new THREE.Color(0x000000); // 真っ黒
 
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100.0);
-        camera.position.set(0, 1.3, 2.8); 
-        camera.lookAt(0, 1.1, 0);
-
-        const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, preserveDrawingBuffer: true });
+        const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 100.0);
+        camera.position.set(0, 1.3, 2.5); // 近く、圧迫感のある距離
+        
+        const renderer = new THREE.WebGLRenderer({ canvas: canvas, preserveDrawingBuffer: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-        // Lighting
-        const dirLight = new THREE.DirectionalLight(0xffffff, 2.0);
-        dirLight.position.set(0, 1, 1).normalize();
+        // Lighting: フラットで冷たい光
+        const dirLight = new THREE.DirectionalLight(0xffffff, 3.0);
+        dirLight.position.set(0, 0, 1);
         scene.add(dirLight);
-        
-        const spotLight = new THREE.SpotLight(0x00ffcc, 15.0);
-        spotLight.position.set(0, 3, 3);
-        scene.add(spotLight);
 
-        // --- 2. LIQUID WAVE SHADER ---
-        // アバターを液体のようにぐにゃぐにゃにするシェーダー
-        const V5WaveShader = {
+        // --- 2. DOOMSDAY SHADER (THE ONE EFFECT) ---
+        const V6DoomsdayShader = {
             uniforms: {
                 "tDiffuse": { value: null },
                 "time": { value: 0.0 },
-                "audioLow": { value: 0.0 }, 
-                "audioMid": { value: 0.0 }, 
-                "audioHigh": { value: 0.0 },
+                "audioPower": { value: 0.0 }, // 全帯域の爆発的な合計値
                 "resolution": { value: new THREE.Vector2() }
             },
             vertexShader: `
@@ -181,10 +148,7 @@
             fragmentShader: `
                 uniform sampler2D tDiffuse;
                 uniform float time;
-                uniform float audioLow;
-                uniform float audioMid;
-                uniform float audioHigh;
-                uniform vec2 resolution;
+                uniform float audioPower; // 0.0 ~ 10.0 (想定)
                 varying vec2 vUv;
 
                 float random(vec2 st) {
@@ -194,57 +158,55 @@
                 void main() {
                     vec2 p = vUv;
                     
-                    // --- 1. HYPER SENSITIVE WAVE (液状化) ---
-                    // 低音（Bass）: 大きくゆっくりとしたうねり
-                    float waveBass = sin(p.y * 5.0 + time * 10.0) * (audioLow * 0.15); // 感度高め
-                    
-                    // 高音（High）: 細かく速い振動（ビリビリ）
-                    float waveHigh = sin(p.y * 80.0 + time * 50.0) * (audioHigh * 0.03);
+                    // 音圧ブースト：小さな音でも反応するように、入力を二乗・三乗して扱う
+                    float power = pow(audioPower, 2.0) * 2.0; 
+                    float twitch = random(vec2(time, 0.0));
 
-                    // 横揺れ適用
-                    p.x += waveBass + waveHigh;
-
-                    // 縦揺れ（中音域）
-                    p.y += cos(p.x * 10.0 + time * 15.0) * (audioMid * 0.05);
-
-
-                    // --- 2. SHOCKWAVE (KICK DRUM) ---
-                    // 低音が強い時に画面中心から衝撃波
-                    if (audioLow > 0.5) {
-                        vec2 center = vec2(0.5, 0.5);
-                        float dist = distance(p, center);
-                        float shock = (1.0 - dist) * audioLow * 0.1;
-                        p -= (p - center) * shock; // 中心から外へ広げる
+                    // 1. SPATIAL TEAR (空間引き裂き)
+                    // 音が大きい時、画面のY座標ごとランダムに横へ吹き飛ばす
+                    if (power > 0.1) {
+                        float stripId = floor(p.y * (10.0 + power * 50.0)); // 短冊状に切る
+                        float noiseVal = random(vec2(stripId, time));
+                        // 激しく左右にズレる
+                        p.x += (noiseVal - 0.5) * power * 0.5; 
                     }
 
-
-                    // --- 3. CHROMATIC ABERRATION (色ずれ) ---
-                    // 波打つタイミングで色もずらす
-                    float shift = (audioLow * 0.05) + (audioHigh * 0.03);
-                    vec4 color;
+                    // 2. RGB EXPLOSION (色収差の極大化)
+                    // 音圧に合わせてRGBのサンプリング位置を極端に離す
+                    float shift = power * 0.1; 
                     
-                    // R, G, Bをそれぞれ違う波形でずらして取得
-                    color.r = texture2D(tDiffuse, p + vec2(shift, 0.0)).r;
-                    color.g = texture2D(tDiffuse, p).g;
-                    color.b = texture2D(tDiffuse, p - vec2(shift, 0.0)).b;
-                    color.a = texture2D(tDiffuse, p).a;
+                    // ランダムな方向にチャンネルを飛ばす
+                    vec2 rOff = vec2(shift, shift * (random(vec2(time, 1.0))-0.5));
+                    vec2 gOff = vec2(-shift, 0.0);
+                    vec2 bOff = vec2(0.0, -shift);
 
+                    // テクスチャ取得 (境界外は黒にするためのクランプ的な処理はあえてしない＝バグっぽさを出す)
+                    float r = texture2D(tDiffuse, p + rOff).r;
+                    float g = texture2D(tDiffuse, p + gOff).g;
+                    float b = texture2D(tDiffuse, p + bOff).b;
+                    float a = texture2D(tDiffuse, p).a;
 
-                    // --- 4. NOISE & SCANLINES ---
-                    // アナログTVのようなノイズ
-                    float noise = random(p + time) * (audioHigh * 0.3);
-                    color.rgb += noise;
-                    
-                    // スキャンライン
-                    color.rgb -= sin(p.y * 800.0) * 0.1;
+                    vec3 color = vec3(r, g, b);
 
-                    // --- 5. FLASH (STROBE) ---
-                    // キックに合わせて明滅
-                    if (audioLow > 0.8) {
-                        color.rgb += 0.2;
+                    // 3. FLASH & INVERT (視界反転)
+                    // キックのような強い音(power > 0.5)で色が反転し、明度が爆上がりする
+                    if (power > 0.8 && twitch > 0.2) {
+                        color = 1.0 - color; // 反転
+                        color += 0.5;        // ホワイトアウト
                     }
 
-                    gl_FragColor = color;
+                    // 4. BIT CRUSH / NOISE
+                    // 全体に強烈な砂嵐を混ぜる
+                    float noise = random(p * time * 100.0);
+                    if (noise < power * 0.5) {
+                        // 音が大きいほどノイズピクセルが増える
+                        color += vec3(noise); 
+                    }
+
+                    // 5. CONTRAST BOOST (常にバキバキな画質に)
+                    color = (color - 0.5) * (1.2 + power) + 0.5;
+
+                    gl_FragColor = vec4(color, 1.0);
                 }
             `
         };
@@ -252,15 +214,14 @@
         const composer = new EffectComposer(renderer);
         composer.addPass(new RenderPass(scene, camera));
         
-        const wavePass = new ShaderPass(V5WaveShader);
-        wavePass.uniforms['resolution'].value.set(window.innerWidth, window.innerHeight);
-        composer.addPass(wavePass);
-
+        const doomsdayPass = new ShaderPass(V6DoomsdayShader);
+        composer.addPass(doomsdayPass);
+        
         const outputPass = new OutputPass();
         composer.addPass(outputPass);
 
 
-        // --- 3. AUDIO FILE SYSTEM (HYPER SENSITIVE) ---
+        // --- 3. AUDIO SYSTEM (ULTRA SENSITIVE) ---
         let audioCtx, analyser, dataArray, source;
         let audioEl = new Audio();
         audioEl.loop = true; 
@@ -272,8 +233,8 @@
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 analyser = audioCtx.createAnalyser();
-                analyser.fftSize = 2048; // 最高解像度
-                analyser.smoothingTimeConstant = 0.1; // 【重要】平滑化をほぼ無くし、生データに近くする（超敏感）
+                analyser.fftSize = 2048; 
+                analyser.smoothingTimeConstant = 0.0; // 【最重要】平滑化ゼロ。生の波形反応。
                 dataArray = new Uint8Array(analyser.frequencyBinCount);
 
                 source = audioCtx.createMediaElementSource(audioEl);
@@ -297,17 +258,17 @@
 
             if (audioEl.paused) {
                 audioEl.play();
-                playBtn.innerText = "PAUSE";
+                playBtn.innerText = "ABORT";
                 playBtn.classList.add('active');
             } else {
                 audioEl.pause();
-                playBtn.innerText = "PLAY";
+                playBtn.innerText = "INITIATE";
                 playBtn.classList.remove('active');
             }
         });
 
 
-        // --- 4. VRM LOADER ---
+        // --- 4. VRM SETUP ---
         const loader = new GLTFLoader();
         loader.register((parser) => new VRMLoaderPlugin(parser));
         let currentVrm = null;
@@ -323,11 +284,10 @@
                 currentVrm = vrm;
                 scene.add(vrm.scene);
                 
-                vrm.humanoid.getNormalizedBoneNode('leftUpperArm').rotation.z = 1.2;
-                vrm.humanoid.getNormalizedBoneNode('rightUpperArm').rotation.z = -1.2;
-
-                log("VRM LOADED");
-            }, undefined, (e) => log("VRM ERROR"));
+                // 少し前のめりな姿勢
+                vrm.humanoid.getNormalizedBoneNode('spine').rotation.x = 0.2;
+                log("TARGET ACQUIRED");
+            });
         }
         
         loadVRM('https://raw.githubusercontent.com/pixiv/three-vrm/master/packages/three-vrm/examples/models/VRM1_Constraint_Twist_Sample.vrm');
@@ -356,8 +316,7 @@
                 source.connect(dest); 
                 canvasStream.addTrack(dest.stream.getAudioTracks()[0]);
             }
-            
-            let options = { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 8000000 };
+            let options = { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 10000000 }; // 最高画質
             if (!MediaRecorder.isTypeSupported(options.mimeType)) options = { mimeType: 'video/webm' };
 
             mediaRecorder = new MediaRecorder(canvasStream, options);
@@ -368,29 +327,24 @@
                 const a = document.createElement('a');
                 a.style.display = 'none';
                 a.href = url;
-                a.download = 'vj_liquid_' + Date.now() + '.webm';
+                a.download = 'DOOMSDAY_LOG.webm';
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
                 recordedChunks = [];
-                log("SAVED.");
             };
-
             mediaRecorder.start();
-            recBtn.innerText = "STOP";
             recBtn.classList.add('active');
             recIndicator.style.display = 'block';
         }
 
         function stopRecording() {
             mediaRecorder.stop();
-            recBtn.innerText = "REC START";
             recBtn.classList.remove('active');
             recIndicator.style.display = 'none';
         }
 
-
-        // --- 6. LOOP ---
+        // --- 6. RENDER LOOP ---
         const clock = new THREE.Clock();
 
         function animate() {
@@ -398,37 +352,33 @@
             const deltaTime = clock.getDelta();
             const time = clock.getElapsedTime();
 
-            let low = 0, mid = 0, high = 0;
+            let power = 0;
 
             if (analyser && !audioEl.paused) {
                 analyser.getByteFrequencyData(dataArray);
                 
-                const bassData = dataArray.slice(0, 20);
-                const midData = dataArray.slice(30, 150);
-                const highData = dataArray.slice(150, 400);
+                // 全帯域のエネルギーを合計して「破壊力」とする
+                let sum = 0;
+                for(let i=0; i < dataArray.length; i++) {
+                    sum += dataArray[i];
+                }
+                // 平均値を正規化 (0.0 - 1.0)
+                let avg = sum / dataArray.length / 255.0;
                 
-                const avg = (arr) => arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
-                
-                // 感度を上げるために値をブースト
-                low = Math.min(1.0, (avg(bassData) / 255.0) * 1.2);
-                mid = Math.min(1.0, (avg(midData) / 255.0) * 1.2);
-                high = Math.min(1.0, (avg(highData) / 255.0) * 1.5); // 高音は特に反応しやすく
+                // 感度ブースト: 小さな音でも大きく反応させる
+                power = avg * 4.0; 
             }
 
             if (currentVrm) {
                 currentVrm.update(deltaTime);
-                currentVrm.scene.rotation.y += 0.005; // ゆっくり回転
-                currentVrm.scene.position.set(0, 0, 0);
                 
-                // 物理的な拡大縮小も少し大げさに
-                const scale = 1.0 + (low * 0.2);
-                currentVrm.scene.scale.set(scale, scale, scale);
+                // アバター自体も高速回転させる（音が大きいとき）
+                currentVrm.scene.rotation.y += 0.01 + (power * 0.2);
+                currentVrm.scene.position.set(0, -0.5, 0); // 中心
             }
 
-            wavePass.uniforms['time'].value = time;
-            wavePass.uniforms['audioLow'].value = low;
-            wavePass.uniforms['audioMid'].value = mid;
-            wavePass.uniforms['audioHigh'].value = high;
+            doomsdayPass.uniforms['time'].value = time;
+            doomsdayPass.uniforms['audioPower'].value = power; // ここに極限の値を渡す
 
             composer.render();
         }
@@ -440,7 +390,6 @@
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
             composer.setSize(window.innerWidth, window.innerHeight);
-            wavePass.uniforms['resolution'].value.set(window.innerWidth, window.innerHeight);
         });
     </script>
 </body>
