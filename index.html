@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GHOST_PROTOCOL_V7_PSYCHO_GLITCH</title>
+    <title>GHOST_PROTOCOL_V7_PSYCHO_GLITCH_FIXED</title>
     <link rel="icon" href="data:,">
 
     <style>
@@ -24,13 +24,13 @@
             z-index: 10; pointer-events: none;
             padding: 20px; box-sizing: border-box;
             color: #fff;
-            mix-blend-mode: difference; /* 背景が白くなっても文字が見えるように */
+            mix-blend-mode: difference; 
         }
 
         h1 { 
             font-size: 2rem; margin: 0; letter-spacing: 8px; font-weight: 900;
             border-bottom: 4px solid #fff; display: inline-block;
-            animation: textRuin 0.05s infinite alternate; /* 文字も激しくグリッチ */
+            animation: textRuin 0.05s infinite alternate; 
         }
         @keyframes textRuin {
             0% { transform: translate(0,0); filter: hue-rotate(0deg); }
@@ -123,14 +123,14 @@
         scene.background = new THREE.Color(0x000000); 
 
         const camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, 100.0);
-        camera.position.set(0, 1.3, 3.0); // アバターをしっかり捉える距離
-        camera.lookAt(0, 1.0, 0); // 中央を見る
+        camera.position.set(0, 1.3, 3.0); 
+        camera.lookAt(0, 1.0, 0); 
         
         const renderer = new THREE.WebGLRenderer({ canvas: canvas, preserveDrawingBuffer: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-        // Lighting: 真上からの冷たいスポットライト
+        // Lighting
         const spotLight = new THREE.SpotLight(0xffffff, 5.0, 10, Math.PI / 4, 0.5, 2.0);
         spotLight.position.set(0, 5, 0);
         spotLight.target.position.set(0, 1, 0);
@@ -142,7 +142,7 @@
             uniforms: {
                 "tDiffuse": { value: null },
                 "time": { value: 0.0 },
-                "audioPower": { value: 0.0 }, // 全帯域の破壊力
+                "audioPower": { value: 0.0 }, 
                 "resolution": { value: new THREE.Vector2() }
             },
             vertexShader: `
@@ -155,15 +155,13 @@
             fragmentShader: `
                 uniform sampler2D tDiffuse;
                 uniform float time;
-                uniform float audioPower; // 0.0 ~ 4.0 (想定)
+                uniform float audioPower; 
                 varying vec2 vUv;
 
-                // Simple random generator
                 float random(vec2 st) {
                     return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
                 }
 
-                // Noise function for more organic distortions
                 float noise(vec2 st) {
                     return fract(sin(dot(st, vec2(12.9898, 78.233))) * 43758.5453);
                 }
@@ -171,13 +169,11 @@
                 void main() {
                     vec2 p = vUv;
                     
-                    // 音のパワーを極限までブースト
-                    float power = pow(audioPower, 3.0) * 10.0; // 小さな音でも破壊的に
-                    float chaos = random(vec2(time, 0.0)); // 常に変動するカオス要素
+                    float power = pow(audioPower, 3.0) * 10.0; 
+                    float chaos = random(vec2(time, 0.0)); 
 
-                    // 1. PIXEL DISTORTION & SHIFT (ピクセル破壊＆ズレ)
-                    // 画面を細かく分割し、音に合わせてランダムにズラす
-                    float grid_scale = 10.0 + power * 50.0; // 音が大きいとグリッドが細かくなる
+                    // 1. PIXEL DISTORTION & SHIFT
+                    float grid_scale = 10.0 + power * 50.0; 
                     vec2 grid_coord = floor(p * grid_scale);
                     
                     float shift_x = (random(vec2(grid_coord.x, time * 10.0)) - 0.5) * power * 0.2;
@@ -186,12 +182,10 @@
                     p.x += shift_x;
                     p.y += shift_y;
 
-                    // 2. HUE SHIFT (色相破壊)
-                    // 画面全体の色相を激しく変化させる
-                    float hue_shift_amount = power * 0.5; // 音が大きいほど色相がずれる
+                    // 2. HUE SHIFT (FIXED)
+                    float hue_shift_amount = power * 0.5;
                     vec3 finalColor = texture2D(tDiffuse, p).rgb;
 
-                    // RGB to HSL (簡略版)
                     float Cmax = max(max(finalColor.r, finalColor.g), finalColor.b);
                     float Cmin = min(min(finalColor.r, finalColor.g), finalColor.b);
                     float delta = Cmax - Cmin;
@@ -204,41 +198,36 @@
                     }
                     h = h / 6.0;
 
-                    // HSL to RGB (簡略版)
-                    // Hを変化させる
                     h = mod(h + hue_shift_amount + time * 0.1, 1.0); 
 
-                    // HSV to RGB, simplified for hue rotation
                     float r = abs(h * 6.0 - 3.0) - 1.0;
                     float g = 2.0 - abs(h * 6.0 - 2.0);
                     float b = 2.0 - abs(h * 6.0 - 4.0);
                     vec3 h_rotated_rgb = clamp(vec3(r, g, b), 0.0, 1.0);
-                    finalColor = mix(Cmin, Cmax, h_rotated_rgb);
+                    
+                    // --- 修正箇所: mixの引数をすべてvec3に合わせました ---
+                    finalColor = mix(vec3(Cmin), vec3(Cmax), h_rotated_rgb);
+                    // ------------------------------------------------
 
-
-                    // 3. INVERT & FLASH (反転と強烈な点滅)
-                    // 音が強い時、画面を白黒反転させたり、一時的に真っ白に点滅させる
-                    if (power > 0.5 && chaos > 0.3) { // 確率で反転
+                    // 3. INVERT & FLASH
+                    if (power > 0.5 && chaos > 0.3) { 
                         finalColor = 1.0 - finalColor;
                     }
-                    if (power > 0.8 && chaos > 0.7) { // 確率でフラッシュ
-                        finalColor += vec3(1.0) * (power * 0.5); // 画面を白く飛ばす
+                    if (power > 0.8 && chaos > 0.7) { 
+                        finalColor += vec3(1.0) * (power * 0.5); 
                     }
 
-                    // 4. DISTORTION NOISE (映像全体の歪みノイズ)
-                    // 映像全体をノイズで破壊
+                    // 4. DISTORTION NOISE
                     float distort_noise_amount = noise(p * 100.0 + time * 20.0) * power * 0.5;
                     finalColor += distort_noise_amount;
 
-                    // 5. GRID DISRUPTION (グリッド破壊)
-                    // 音が大きい時にグリッドが浮き上がり、歪む
+                    // 5. GRID DISRUPTION
                     float grid_strength = power * 0.2;
                     vec2 line_coord = fract(p * 50.0 + time * 5.0);
                     if (line_coord.x < grid_strength || line_coord.y < grid_strength) {
-                        finalColor.rgb = mix(finalColor.rgb, vec3(1.0, 0.0, 1.0), grid_strength); // マゼンタ色のグリッド
+                        finalColor.rgb = mix(finalColor.rgb, vec3(1.0, 0.0, 1.0), grid_strength); 
                     }
 
-                    // 最終コントラスト強調
                     finalColor = (finalColor - 0.5) * (1.5 + power) + 0.5;
 
                     gl_FragColor = vec4(finalColor, 1.0);
@@ -256,7 +245,7 @@
         composer.addPass(outputPass);
 
 
-        // --- 3. AUDIO SYSTEM (OVERLOAD SENSITIVE) ---
+        // --- 3. AUDIO SYSTEM ---
         let audioCtx, analyser, dataArray, source;
         let audioEl = new Audio();
         audioEl.loop = true; 
@@ -269,7 +258,7 @@
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 analyser = audioCtx.createAnalyser();
                 analyser.fftSize = 2048; 
-                analyser.smoothingTimeConstant = 0.0; // 【最重要】平滑化ゼロ。生の波形反応。
+                analyser.smoothingTimeConstant = 0.0; 
                 dataArray = new Uint8Array(analyser.frequencyBinCount);
 
                 source = audioCtx.createMediaElementSource(audioEl);
@@ -305,7 +294,7 @@
         });
 
 
-        // --- 4. VRM SETUP (FIXED) ---
+        // --- 4. VRM SETUP ---
         const loader = new GLTFLoader();
         loader.register((parser) => new VRMLoaderPlugin(parser));
         let currentVrm = null;
@@ -321,10 +310,10 @@
                 currentVrm = vrm;
                 scene.add(vrm.scene);
                 
-                // アバターを中央に絶対固定し、回転も停止
-                currentVrm.scene.position.set(0, -0.5, 0); // 地面に置く
-                currentVrm.scene.rotation.set(0, 0, 0); // 回転停止
-                currentVrm.humanoid.getNormalizedBoneNode('spine').rotation.x = 0.1; // 微妙なポーズ
+                // 固定
+                currentVrm.scene.position.set(0, -0.5, 0); 
+                currentVrm.scene.rotation.set(0, 0, 0); 
+                currentVrm.humanoid.getNormalizedBoneNode('spine').rotation.x = 0.1; 
 
                 log("TARGET ACQUIRED: VRM OK");
             });
@@ -405,12 +394,11 @@
                 }
                 let avg = sum / dataArray.length / 255.0;
                 
-                power = avg * 2.0; // さらにブースト
+                power = avg * 2.0; 
             }
 
             if (currentVrm) {
                 currentVrm.update(deltaTime);
-                // ここでVRMの位置と回転を確実に固定
                 currentVrm.scene.position.set(0, -0.5, 0);
                 currentVrm.scene.rotation.set(0, 0, 0);
             }
