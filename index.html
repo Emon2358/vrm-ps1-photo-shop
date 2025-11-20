@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GHOST_PROTOCOL_V6_DOOMSDAY</title>
+    <title>GHOST_PROTOCOL_V7_PSYCHO_GLITCH</title>
     <link rel="icon" href="data:,">
 
     <style>
@@ -14,7 +14,6 @@
             font-family: 'Courier New', Courier, monospace;
         }
 
-        /* 純粋な黒背景 */
         #canvas {
             display: block; position: absolute; top: 0; left: 0; z-index: 1;
         }
@@ -31,9 +30,14 @@
         h1 { 
             font-size: 2rem; margin: 0; letter-spacing: 8px; font-weight: 900;
             border-bottom: 4px solid #fff; display: inline-block;
-            animation: shake 0.1s infinite;
+            animation: textRuin 0.05s infinite alternate; /* 文字も激しくグリッチ */
         }
-        @keyframes shake { 0% { transform: translate(0,0); } 100% { transform: translate(2px, -2px); } }
+        @keyframes textRuin {
+            0% { transform: translate(0,0); filter: hue-rotate(0deg); }
+            33% { transform: translate(3px, -3px); filter: hue-rotate(120deg); }
+            66% { transform: translate(-3px, 3px); filter: hue-rotate(240deg); }
+            100% { transform: translate(0,0); filter: hue-rotate(360deg); }
+        }
 
         p { font-size: 0.9rem; font-weight: bold; background: #fff; color: #000; display: inline-block; padding: 2px; }
 
@@ -59,9 +63,9 @@
         #rec-indicator {
             display: none; position: absolute; top: 20px; right: 20px;
             color: #f00; font-size: 2rem; font-weight: 900;
-            animation: blink 0.05s infinite; border: 5px solid #f00; padding: 10px;
+            animation: blinkExtreme 0.02s infinite; border: 5px solid #f00; padding: 10px;
         }
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } }
+        @keyframes blinkExtreme { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
         input[type="file"] { display: none; }
     </style>
@@ -78,11 +82,11 @@
 </head>
 <body>
     <div id="ui-layer">
-        <h1>V6: DOOMSDAY</h1>
+        <h1>V7: PSYCHO_GLITCH</h1>
         <br><br>
-        <p>!!! WARNING: EPILEPSY HAZARD !!!</p>
+        <p>!!! WARNING: COGNITIVE HAZARD !!!</p>
         <br>
-        <p>>> SENSITIVITY: INFINITE</p>
+        <p>>> SENSITIVITY: OVERLOAD</p>
 
         <div class="controls">
             <input type="file" id="vrm-input" accept=".vrm">
@@ -96,7 +100,7 @@
         </div>
 
         <div id="rec-indicator">RECORDING</div>
-        <div id="status-log">WAITING FOR TARGET...</div>
+        <div id="status-log">SYSTEM ONLINE. AWAITING SIGNAL...</div>
     </div>
 
     <canvas id="canvas"></canvas>
@@ -116,26 +120,29 @@
         // --- 1. SCENE ---
         const canvas = document.getElementById('canvas');
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x000000); // 真っ黒
+        scene.background = new THREE.Color(0x000000); 
 
-        const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 100.0);
-        camera.position.set(0, 1.3, 2.5); // 近く、圧迫感のある距離
+        const camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, 100.0);
+        camera.position.set(0, 1.3, 3.0); // アバターをしっかり捉える距離
+        camera.lookAt(0, 1.0, 0); // 中央を見る
         
         const renderer = new THREE.WebGLRenderer({ canvas: canvas, preserveDrawingBuffer: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-        // Lighting: フラットで冷たい光
-        const dirLight = new THREE.DirectionalLight(0xffffff, 3.0);
-        dirLight.position.set(0, 0, 1);
-        scene.add(dirLight);
+        // Lighting: 真上からの冷たいスポットライト
+        const spotLight = new THREE.SpotLight(0xffffff, 5.0, 10, Math.PI / 4, 0.5, 2.0);
+        spotLight.position.set(0, 5, 0);
+        spotLight.target.position.set(0, 1, 0);
+        scene.add(spotLight);
+        scene.add(spotLight.target);
 
-        // --- 2. DOOMSDAY SHADER (THE ONE EFFECT) ---
-        const V6DoomsdayShader = {
+        // --- 2. PSYCHO GLITCH SHADER ---
+        const V7PsychoGlitchShader = {
             uniforms: {
                 "tDiffuse": { value: null },
                 "time": { value: 0.0 },
-                "audioPower": { value: 0.0 }, // 全帯域の爆発的な合計値
+                "audioPower": { value: 0.0 }, // 全帯域の破壊力
                 "resolution": { value: new THREE.Vector2() }
             },
             vertexShader: `
@@ -148,65 +155,93 @@
             fragmentShader: `
                 uniform sampler2D tDiffuse;
                 uniform float time;
-                uniform float audioPower; // 0.0 ~ 10.0 (想定)
+                uniform float audioPower; // 0.0 ~ 4.0 (想定)
                 varying vec2 vUv;
 
+                // Simple random generator
                 float random(vec2 st) {
                     return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
+                }
+
+                // Noise function for more organic distortions
+                float noise(vec2 st) {
+                    return fract(sin(dot(st, vec2(12.9898, 78.233))) * 43758.5453);
                 }
 
                 void main() {
                     vec2 p = vUv;
                     
-                    // 音圧ブースト：小さな音でも反応するように、入力を二乗・三乗して扱う
-                    float power = pow(audioPower, 2.0) * 2.0; 
-                    float twitch = random(vec2(time, 0.0));
+                    // 音のパワーを極限までブースト
+                    float power = pow(audioPower, 3.0) * 10.0; // 小さな音でも破壊的に
+                    float chaos = random(vec2(time, 0.0)); // 常に変動するカオス要素
 
-                    // 1. SPATIAL TEAR (空間引き裂き)
-                    // 音が大きい時、画面のY座標ごとランダムに横へ吹き飛ばす
-                    if (power > 0.1) {
-                        float stripId = floor(p.y * (10.0 + power * 50.0)); // 短冊状に切る
-                        float noiseVal = random(vec2(stripId, time));
-                        // 激しく左右にズレる
-                        p.x += (noiseVal - 0.5) * power * 0.5; 
-                    }
-
-                    // 2. RGB EXPLOSION (色収差の極大化)
-                    // 音圧に合わせてRGBのサンプリング位置を極端に離す
-                    float shift = power * 0.1; 
+                    // 1. PIXEL DISTORTION & SHIFT (ピクセル破壊＆ズレ)
+                    // 画面を細かく分割し、音に合わせてランダムにズラす
+                    float grid_scale = 10.0 + power * 50.0; // 音が大きいとグリッドが細かくなる
+                    vec2 grid_coord = floor(p * grid_scale);
                     
-                    // ランダムな方向にチャンネルを飛ばす
-                    vec2 rOff = vec2(shift, shift * (random(vec2(time, 1.0))-0.5));
-                    vec2 gOff = vec2(-shift, 0.0);
-                    vec2 bOff = vec2(0.0, -shift);
+                    float shift_x = (random(vec2(grid_coord.x, time * 10.0)) - 0.5) * power * 0.2;
+                    float shift_y = (random(vec2(grid_coord.y, time * 10.0)) - 0.5) * power * 0.1;
+                    
+                    p.x += shift_x;
+                    p.y += shift_y;
 
-                    // テクスチャ取得 (境界外は黒にするためのクランプ的な処理はあえてしない＝バグっぽさを出す)
-                    float r = texture2D(tDiffuse, p + rOff).r;
-                    float g = texture2D(tDiffuse, p + gOff).g;
-                    float b = texture2D(tDiffuse, p + bOff).b;
-                    float a = texture2D(tDiffuse, p).a;
+                    // 2. HUE SHIFT (色相破壊)
+                    // 画面全体の色相を激しく変化させる
+                    float hue_shift_amount = power * 0.5; // 音が大きいほど色相がずれる
+                    vec3 finalColor = texture2D(tDiffuse, p).rgb;
 
-                    vec3 color = vec3(r, g, b);
+                    // RGB to HSL (簡略版)
+                    float Cmax = max(max(finalColor.r, finalColor.g), finalColor.b);
+                    float Cmin = min(min(finalColor.r, finalColor.g), finalColor.b);
+                    float delta = Cmax - Cmin;
+                    
+                    float h = 0.0;
+                    if (delta > 0.0) {
+                        if (Cmax == finalColor.r) h = mod((finalColor.g - finalColor.b) / delta, 6.0);
+                        else if (Cmax == finalColor.g) h = (finalColor.b - finalColor.r) / delta + 2.0;
+                        else h = (finalColor.r - finalColor.g) / delta + 4.0;
+                    }
+                    h = h / 6.0;
 
-                    // 3. FLASH & INVERT (視界反転)
-                    // キックのような強い音(power > 0.5)で色が反転し、明度が爆上がりする
-                    if (power > 0.8 && twitch > 0.2) {
-                        color = 1.0 - color; // 反転
-                        color += 0.5;        // ホワイトアウト
+                    // HSL to RGB (簡略版)
+                    // Hを変化させる
+                    h = mod(h + hue_shift_amount + time * 0.1, 1.0); 
+
+                    // HSV to RGB, simplified for hue rotation
+                    float r = abs(h * 6.0 - 3.0) - 1.0;
+                    float g = 2.0 - abs(h * 6.0 - 2.0);
+                    float b = 2.0 - abs(h * 6.0 - 4.0);
+                    vec3 h_rotated_rgb = clamp(vec3(r, g, b), 0.0, 1.0);
+                    finalColor = mix(Cmin, Cmax, h_rotated_rgb);
+
+
+                    // 3. INVERT & FLASH (反転と強烈な点滅)
+                    // 音が強い時、画面を白黒反転させたり、一時的に真っ白に点滅させる
+                    if (power > 0.5 && chaos > 0.3) { // 確率で反転
+                        finalColor = 1.0 - finalColor;
+                    }
+                    if (power > 0.8 && chaos > 0.7) { // 確率でフラッシュ
+                        finalColor += vec3(1.0) * (power * 0.5); // 画面を白く飛ばす
                     }
 
-                    // 4. BIT CRUSH / NOISE
-                    // 全体に強烈な砂嵐を混ぜる
-                    float noise = random(p * time * 100.0);
-                    if (noise < power * 0.5) {
-                        // 音が大きいほどノイズピクセルが増える
-                        color += vec3(noise); 
+                    // 4. DISTORTION NOISE (映像全体の歪みノイズ)
+                    // 映像全体をノイズで破壊
+                    float distort_noise_amount = noise(p * 100.0 + time * 20.0) * power * 0.5;
+                    finalColor += distort_noise_amount;
+
+                    // 5. GRID DISRUPTION (グリッド破壊)
+                    // 音が大きい時にグリッドが浮き上がり、歪む
+                    float grid_strength = power * 0.2;
+                    vec2 line_coord = fract(p * 50.0 + time * 5.0);
+                    if (line_coord.x < grid_strength || line_coord.y < grid_strength) {
+                        finalColor.rgb = mix(finalColor.rgb, vec3(1.0, 0.0, 1.0), grid_strength); // マゼンタ色のグリッド
                     }
 
-                    // 5. CONTRAST BOOST (常にバキバキな画質に)
-                    color = (color - 0.5) * (1.2 + power) + 0.5;
+                    // 最終コントラスト強調
+                    finalColor = (finalColor - 0.5) * (1.5 + power) + 0.5;
 
-                    gl_FragColor = vec4(color, 1.0);
+                    gl_FragColor = vec4(finalColor, 1.0);
                 }
             `
         };
@@ -214,14 +249,14 @@
         const composer = new EffectComposer(renderer);
         composer.addPass(new RenderPass(scene, camera));
         
-        const doomsdayPass = new ShaderPass(V6DoomsdayShader);
-        composer.addPass(doomsdayPass);
+        const psychoGlitchPass = new ShaderPass(V7PsychoGlitchShader);
+        composer.addPass(psychoGlitchPass);
         
         const outputPass = new OutputPass();
         composer.addPass(outputPass);
 
 
-        // --- 3. AUDIO SYSTEM (ULTRA SENSITIVE) ---
+        // --- 3. AUDIO SYSTEM (OVERLOAD SENSITIVE) ---
         let audioCtx, analyser, dataArray, source;
         let audioEl = new Audio();
         audioEl.loop = true; 
@@ -248,7 +283,7 @@
             if (!file) return;
             const url = URL.createObjectURL(file);
             audioEl.src = url;
-            log("AUDIO LOADED");
+            log("AUDIO DATA LOADED.");
             playBtn.disabled = false;
         });
 
@@ -258,17 +293,19 @@
 
             if (audioEl.paused) {
                 audioEl.play();
-                playBtn.innerText = "ABORT";
+                playBtn.innerText = "HALT";
                 playBtn.classList.add('active');
+                log("SIGNAL INITIATED.");
             } else {
                 audioEl.pause();
                 playBtn.innerText = "INITIATE";
                 playBtn.classList.remove('active');
+                log("SIGNAL HALTED.");
             }
         });
 
 
-        // --- 4. VRM SETUP ---
+        // --- 4. VRM SETUP (FIXED) ---
         const loader = new GLTFLoader();
         loader.register((parser) => new VRMLoaderPlugin(parser));
         let currentVrm = null;
@@ -284,9 +321,12 @@
                 currentVrm = vrm;
                 scene.add(vrm.scene);
                 
-                // 少し前のめりな姿勢
-                vrm.humanoid.getNormalizedBoneNode('spine').rotation.x = 0.2;
-                log("TARGET ACQUIRED");
+                // アバターを中央に絶対固定し、回転も停止
+                currentVrm.scene.position.set(0, -0.5, 0); // 地面に置く
+                currentVrm.scene.rotation.set(0, 0, 0); // 回転停止
+                currentVrm.humanoid.getNormalizedBoneNode('spine').rotation.x = 0.1; // 微妙なポーズ
+
+                log("TARGET ACQUIRED: VRM OK");
             });
         }
         
@@ -316,7 +356,7 @@
                 source.connect(dest); 
                 canvasStream.addTrack(dest.stream.getAudioTracks()[0]);
             }
-            let options = { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 10000000 }; // 最高画質
+            let options = { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 12000000 }; 
             if (!MediaRecorder.isTypeSupported(options.mimeType)) options = { mimeType: 'video/webm' };
 
             mediaRecorder = new MediaRecorder(canvasStream, options);
@@ -327,15 +367,17 @@
                 const a = document.createElement('a');
                 a.style.display = 'none';
                 a.href = url;
-                a.download = 'DOOMSDAY_LOG.webm';
+                a.download = 'PSYCHO_LOG_' + Date.now() + '.webm';
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
                 recordedChunks = [];
+                log("RECORD COMPLETE.");
             };
             mediaRecorder.start();
             recBtn.classList.add('active');
             recIndicator.style.display = 'block';
+            log("RECORDING IN PROGRESS...");
         }
 
         function stopRecording() {
@@ -357,28 +399,24 @@
             if (analyser && !audioEl.paused) {
                 analyser.getByteFrequencyData(dataArray);
                 
-                // 全帯域のエネルギーを合計して「破壊力」とする
                 let sum = 0;
                 for(let i=0; i < dataArray.length; i++) {
                     sum += dataArray[i];
                 }
-                // 平均値を正規化 (0.0 - 1.0)
                 let avg = sum / dataArray.length / 255.0;
                 
-                // 感度ブースト: 小さな音でも大きく反応させる
-                power = avg * 4.0; 
+                power = avg * 2.0; // さらにブースト
             }
 
             if (currentVrm) {
                 currentVrm.update(deltaTime);
-                
-                // アバター自体も高速回転させる（音が大きいとき）
-                currentVrm.scene.rotation.y += 0.01 + (power * 0.2);
-                currentVrm.scene.position.set(0, -0.5, 0); // 中心
+                // ここでVRMの位置と回転を確実に固定
+                currentVrm.scene.position.set(0, -0.5, 0);
+                currentVrm.scene.rotation.set(0, 0, 0);
             }
 
-            doomsdayPass.uniforms['time'].value = time;
-            doomsdayPass.uniforms['audioPower'].value = power; // ここに極限の値を渡す
+            psychoGlitchPass.uniforms['time'].value = time;
+            psychoGlitchPass.uniforms['audioPower'].value = power; 
 
             composer.render();
         }
