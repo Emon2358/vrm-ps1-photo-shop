@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GHOST_PROTOCOL_V7_PSYCHO_GLITCH_FIXED</title>
+    <title>GHOST_PROTOCOL_V7_PSYCHO_GLITCH_WHITE_BG</title>
     <link rel="icon" href="data:,">
 
     <style>
@@ -120,7 +120,8 @@
         // --- 1. SCENE ---
         const canvas = document.getElementById('canvas');
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x000000); 
+        // ★変更点: 背景色を白に変更
+        scene.background = new THREE.Color(0xffffff); 
 
         const camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, 100.0);
         camera.position.set(0, 1.3, 3.0); 
@@ -182,7 +183,7 @@
                     p.x += shift_x;
                     p.y += shift_y;
 
-                    // 2. HUE SHIFT (FIXED)
+                    // 2. HUE SHIFT
                     float hue_shift_amount = power * 0.5;
                     vec3 finalColor = texture2D(tDiffuse, p).rgb;
 
@@ -205,10 +206,8 @@
                     float b = 2.0 - abs(h * 6.0 - 4.0);
                     vec3 h_rotated_rgb = clamp(vec3(r, g, b), 0.0, 1.0);
                     
-                    // --- 修正箇所: mixの引数をすべてvec3に合わせました ---
                     finalColor = mix(vec3(Cmin), vec3(Cmax), h_rotated_rgb);
-                    // ------------------------------------------------
-
+                    
                     // 3. INVERT & FLASH
                     if (power > 0.5 && chaos > 0.3) { 
                         finalColor = 1.0 - finalColor;
@@ -259,7 +258,7 @@
                 analyser = audioCtx.createAnalyser();
                 analyser.fftSize = 2048; 
                 analyser.smoothingTimeConstant = 0.0; 
-                dataArray = new Uint8Array(analyser.frequencyBinCount);
+                dataArray = new Uint8Array(analyser.frequencyBinBinCount);
 
                 source = audioCtx.createMediaElementSource(audioEl);
                 source.connect(analyser);
@@ -310,7 +309,6 @@
                 currentVrm = vrm;
                 scene.add(vrm.scene);
                 
-                // 固定
                 currentVrm.scene.position.set(0, -0.5, 0); 
                 currentVrm.scene.rotation.set(0, 0, 0); 
                 currentVrm.humanoid.getNormalizedBoneNode('spine').rotation.x = 0.1; 
