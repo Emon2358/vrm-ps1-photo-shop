@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>nihonkokumin_vj_V4</title>
+    <title>nihonkokumin_VJ_V5_EROSION</title>
     <link rel="icon" href="data:,">
 
     <style>
@@ -17,7 +17,7 @@
         /* 背景の砂嵐ノイズ (アバターが消えた時に見える) */
         .static-noise {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            opacity: 0.2; /* 以前より少し濃く */
+            opacity: 0.25; /* 少し濃くして視認性を高める */
             z-index: 0; pointer-events: none;
             background: url('https://media.giphy.com/media/oEI9uBYSzLpBK/giphy.gif');
             background-size: cover;
@@ -25,10 +25,9 @@
 
         #canvas {
             display: block; position: absolute; top: 0; left: 0; z-index: 1;
-            transform: translateZ(0); /* GPUアクセラレーション */
-            transition: transform 0.05s ease-out; /* 振動の滑らかさ */
+            transform: translateZ(0);
+            transition: transform 0.05s ease-out;
         }
-        /* 画面振動クラス */
         .screen-shake {
             transform: translate3d(var(--shake-x, 0), var(--shake-y, 0), 0);
         }
@@ -38,13 +37,13 @@
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 10; pointer-events: none;
             padding: 20px; box-sizing: border-box;
-            color: #ff004c; /* 毒々しい赤 */
-            text-shadow: 2px 2px 0px #000, 0 0 5px #ff004c; /* 発光感 */
+            color: #ff9900; /* 警告色：黄土/オレンジ */
+            text-shadow: 2px 2px 0px #000, 0 0 8px #ff9900; 
         }
 
         h1 { 
             font-size: 1.6rem; margin: 0; letter-spacing: 4px; 
-            border-bottom: 3px solid #ff004c; display: inline-block; background: #000;
+            border-bottom: 3px solid #ff9900; display: inline-block; background: #000;
         }
         p { font-size: 0.9rem; margin: 5px 0; background: #000; display: inline-block;}
 
@@ -54,26 +53,31 @@
         }
 
         .cyber-btn {
-            padding: 12px 22px; border: 2px solid #ff004c; background: #000;
-            color: #ff004c; cursor: pointer; font-weight: bold; font-family: inherit;
+            padding: 12px 22px; border: 2px solid #ff9900; background: #000;
+            color: #ff9900; cursor: pointer; font-weight: bold; font-family: inherit;
             transition: 0.1s; text-transform: uppercase;
             min-width: 130px; text-align: center;
-            box-shadow: 0 0 5px rgba(255, 0, 76, 0.5); /* 初期発光 */
+            box-shadow: 0 0 5px rgba(255, 153, 0, 0.5); 
         }
-        .cyber-btn:hover { background: #ff004c; color: #000; box-shadow: 0 0 15px #ff004c; }
-        .cyber-btn.active { background: #ff004c; color: #fff; box-shadow: 0 0 20px #ff004c; }
+        .cyber-btn:hover { background: #ff9900; color: #000; box-shadow: 0 0 15px #ff9900; }
+        .cyber-btn.active { background: #ff9900; color: #fff; box-shadow: 0 0 20px #ff9900; }
         .cyber-btn:disabled { opacity: 0.3; cursor: not-allowed; border-color: #555; color: #555; box-shadow: none; }
+
+        /* 録画ボタンは赤くする */
+        #btn-rec { border-color: #ff004c; color: #ff004c; box-shadow: 0 0 5px rgba(255, 0, 76, 0.5);}
+        #btn-rec:hover { background: #ff004c; color: #000; box-shadow: 0 0 15px #ff004c; }
+        #btn-rec.active { background: #ff004c; color: #fff; box-shadow: 0 0 20px #ff004c; }
 
         #status-log {
             position: absolute; bottom: 20px; left: 20px; 
             font-size: 0.8rem; color: #fff; white-space: pre;
-            text-shadow: none; /* ログはシンプルに */
+            text-shadow: none; 
         }
 
         /* 録画中インジケーター */
         #rec-indicator {
             display: none; position: absolute; top: 20px; right: 20px;
-            color: yellow; font-weight: bold; animation: blink 0.5s infinite; /* 点滅を早く */
+            color: yellow; font-weight: bold; animation: blink 0.5s infinite;
             background: #000; padding: 8px; border: 2px solid yellow;
             text-shadow: 0 0 8px yellow;
         }
@@ -96,10 +100,10 @@
     <div class="static-noise"></div>
 
     <div id="ui-layer">
-        <h1>V4.0: TOTAL_DECOMPOSITION</h1>
+        <h1>V5.0: EXISTENCE_EROSION</h1>
         <div>
-            <p>>> WARNING: EXTREME_VISUAL_HAZARD</p><br>
-            <p>>> PROTOCOL: CHAOS_ENGINE</p>
+            <p>>> WARNING: SUBTLE_DESTRUCTION</p><br>
+            <p>>> PROTOCOL: DIGITAL_DECAY</p>
         </div>
 
         <div class="controls">
@@ -126,7 +130,6 @@
         import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
         import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
         import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
-        import { GlitchPass } from 'three/addons/postprocessing/GlitchPass.js';
         import { VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm';
 
         // --- UTILS: Logger ---
@@ -145,27 +148,27 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
 
-        // Light (より攻撃的な色と強度に)
-        const dirLight = new THREE.DirectionalLight(0xff004c, 3.0); // 赤っぽいライト
+        // Light (アバターの視認性を確保しつつ、攻撃的な演出)
+        const dirLight = new THREE.DirectionalLight(0xff9900, 3.0); // オレンジ系のライト
         dirLight.position.set(1, 1, 1).normalize();
         scene.add(dirLight);
-        const spotLight = new THREE.SpotLight(0x00ffcc, 15.0); // シアンのスポット
+        const spotLight = new THREE.SpotLight(0x00ffff, 15.0); // シアンのスポット
         spotLight.position.set(0, 2, 2);
-        spotLight.angle = Math.PI / 6; // 狭くする
-        spotLight.penumbra = 0.5; // 半影
+        spotLight.angle = Math.PI / 6;
+        spotLight.penumbra = 0.5;
         scene.add(spotLight);
-        // 背景ライト（音で点滅させる用）
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7); // 明るめの環境光でアバターの視認性を確保
         scene.add(ambientLight);
 
 
-        // --- 2. CHAOS SHADER (EXTREME EFFECTS) ---
-        const ChaosShader = {
+        // --- 2. EXISTENCE_EROSION SHADER (VISUALLY AGGRESSIVE BUT VISIBLE) ---
+        const ExistenceErosionShader = {
             uniforms: {
                 "tDiffuse": { value: null },
                 "time": { value: 0.0 },
                 "audioLow": { value: 0.0 },
-                "audioMid": { value: 0.0 }, // 中域も使う
+                "audioMid": { value: 0.0 },
                 "audioHigh": { value: 0.0 },
                 "resolution": { value: new THREE.Vector2() }
             },
@@ -185,64 +188,104 @@
                 uniform vec2 resolution;
                 varying vec2 vUv;
 
-                // ランダム関数
                 float random(vec2 st) {
                     return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
                 }
 
-                // 2Dノイズ関数
-                float noise(vec2 st) {
-                    return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
+                // グリッド状ノイズ (ハーフドーン/ディザリング風)
+                float grid(vec2 st, float res) {
+                    return smoothstep(0.0, 0.5, abs(sin(st.x * res)) + abs(sin(st.y * res)));
                 }
 
                 void main() {
                     vec2 p = vUv;
-                    vec2 coord = gl_FragCoord.xy / resolution.xy; // ピクセル座標 (0-1)
+                    vec2 coord = gl_FragCoord.xy / resolution.xy;
 
-                    // 1. PIXEL SORTING / SCANLINE DISPLACEMENT (中域に反応)
-                    float lineOffset = 0.0;
-                    if (random(vec2(p.y * 100.0, time * 10.0)) > (0.9 - audioMid * 0.5)) { // 中域で発動率アップ
-                        lineOffset = sin(p.y * 30.0 + time * 20.0) * audioMid * 0.05; // 横方向の歪み
-                    }
-                    p.x += lineOffset;
+                    // 1. ノイズフロート / 画面揺れ (全体の音量に反応)
+                    float noiseFloatStrength = (audioLow + audioMid + audioHigh) / 3.0 * 0.005;
+                    p += (random(vec2(time * 10.0, p.y * 10.0)) - 0.5) * noiseFloatStrength;
 
-                    // 2. EXTREME MOSH (低音に反応, よりランダムに)
-                    float moshStrength = audioLow * 0.2; // 0.2まで歪む
-                    if (random(vec2(time * 5.0, p.y * 10.0)) < 0.5 + audioLow * 0.3) {
-                         p.x += (random(vec2(time * 2.0, p.y * 5.0)) - 0.5) * moshStrength;
-                    }
-                    if (random(vec2(time * 7.0, p.x * 10.0)) < 0.5 + audioLow * 0.3) {
-                         p.y += (random(vec2(time * 3.0, p.x * 5.0)) - 0.5) * moshStrength * (resolution.y / resolution.x); // アスペクト比考慮
-                    }
-
-                    // 3. CHROMATIC ABERRATION (色分解) (全体的な音量に反応)
-                    float colorShiftAmount = (audioLow + audioMid + audioHigh) / 3.0 * 0.08;
+                    // 2. クロマティックアベレーション強化 (より激しく)
+                    float colorShiftAmount = (audioLow + audioMid + audioHigh) / 3.0 * 0.1;
                     vec4 color;
                     color.r = texture2D(tDiffuse, p + vec2(colorShiftAmount, 0.0)).r;
                     color.g = texture2D(tDiffuse, p).g;
                     color.b = texture2D(tDiffuse, p - vec2(colorShiftAmount, 0.0)).b;
                     color.a = texture2D(tDiffuse, p).a;
 
-                    // 4. TOTAL DECAY / VOID (高音に反応, 非常に広範囲に)
-                    float noiseVal = random(floor(p * 80.0) + time * 10.0); // より細かいピクセル感
-                    float threshold = 0.98 - (audioHigh * 0.95); // 高音が少しでもあれば広範囲に消える
+                    // 3. デジタルディザリング / ハーフドーン化 (中域の音に強く反応)
+                    float ditherFactor = audioMid * 5.0 + audioHigh * 3.0; // 音が大きいほどディザが強くなる
+                    float ditherValue = grid(coord, 10.0 + ditherFactor * 50.0); // グリッド密度を変化
+                    color.rgb *= (0.5 + 0.5 * ditherValue); // グリッド状に色を減衰
 
-                    if (noiseVal > threshold || random(coord * 10.0 + time * 5.0) > (0.995 - audioHigh * 0.01)) { // ドット消失 + ランダムライン消失
-                        discard; // ピクセルを描画しない
+                    // 4. エッジ強調 & エッジノイズ (アバターの輪郭を攻撃的に)
+                    float edgeStrength = audioLow * 0.005;
+                    vec4 centralColor = texture2D(tDiffuse, p);
+                    vec4 upColor = texture2D(tDiffuse, p + vec2(0.0, 1.0/resolution.y) * edgeStrength * 10.0);
+                    vec4 downColor = texture2D(tDiffuse, p - vec2(0.0, 1.0/resolution.y) * edgeStrength * 10.0);
+                    vec4 leftColor = texture2D(tDiffuse, p + vec2(1.0/resolution.x, 0.0) * edgeStrength * 10.0);
+                    vec4 rightColor = texture2D(tDiffuse, p - vec2(1.0/resolution.x, 0.0) * edgeStrength * 10.0);
+
+                    float edgeDetect = length(centralColor.rgb - upColor.rgb) + 
+                                       length(centralColor.rgb - downColor.rgb) +
+                                       length(centralColor.rgb - leftColor.rgb) + 
+                                       length(centralColor.rgb - rightColor.rgb);
+                    
+                    if (edgeDetect > 0.1 && centralColor.a > 0.5) { // アバターのエッジで
+                        color.rgb = mix(color.rgb, vec3(1.0, 0.5, 0.0), edgeDetect * (0.5 + audioHigh * 0.5)); // オレンジ系のエッジ
+                        if (random(vec2(time * 20.0, p.y * 100.0)) > (0.8 - audioHigh * 0.2)) { // エッジがノイズで荒れる
+                            color.rgb = mix(color.rgb, vec3(random(p.xy)), 0.3);
+                        }
                     }
 
-                    // 5. INVERT (色反転) (低音のピークで頻繁に)
-                    if (audioLow > 0.9 && random(vec2(time * 10.0, 0.0)) > 0.7) { // 頻度を上げる
-                        color.rgb = 1.0 - color.rgb;
+                    // 5. 内部スキャンライン / スライス (低音のピーク時)
+                    float scanline = sin(p.y * 100.0 + time * 50.0) * 0.5 + 0.5;
+                    if (audioLow > 0.8 && centralColor.a > 0.5) { // アバター内部のみ
+                        color.rgb = mix(color.rgb, vec3(scanline), 0.3); // スキャンラインを混ぜる
+                        if (random(vec2(time * 5.0, p.y)) > 0.9) { // 不定期なスライス
+                            color.rgb = mix(color.rgb, vec3(0.0), audioLow * 0.5); // 部分的に黒く消える
+                        }
                     }
 
-                    // 6. GLITCH LINES (不定期な白い線)
-                    if (random(vec2(p.y * 1000.0, time * 100.0)) > 0.995 && audioHigh > 0.5) { // 高音時に発生
-                        color.rgb = vec3(1.0); // 白い線
-                        color.a = 1.0;
+                    // 6. ボクセル化 / 部分破壊 (高音の強ピークで一瞬)
+                    if (audioHigh > 0.9 && random(vec2(time * 50.0, 0.0)) > 0.5) {
+                        vec2 voxelCoord = floor(p * 20.0) / 20.0; // 粗いピクセルブロック
+                        color = texture2D(tDiffuse, voxelCoord);
+                        if (random(voxelCoord + time) > 0.8) { // ランダムにブロックを消失
+                            discard;
+                        }
                     }
+
+                    // 7. 色相シフト / 反転 (全体の音量に反応)
+                    float hueShift = (audioLow + audioMid + audioHigh) / 3.0 * 2.0;
+                    vec3 hsv = rgb2hsv(color.rgb);
+                    hsv.x = fract(hsv.x + hueShift * 0.1); // 色相をゆっくりシフト
+                    color.rgb = hsv2rgb(hsv);
+
+                    if (audioLow > 0.95 && random(vec2(time * 50.0, 0.0)) > 0.8) {
+                        color.rgb = 1.0 - color.rgb; // 強低音で色反転
+                    }
+                    if (audioHigh > 0.9 && random(vec2(time * 50.0, 0.0)) > 0.8) {
+                        color.rgb = 1.0 - color.rgb; // 強高音で色反転
+                    }
+
 
                     gl_FragColor = color;
+                }
+
+                // RGB to HSV, HSV to RGB functions (for hue shift)
+                vec3 rgb2hsv(vec3 c) {
+                    vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
+                    vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
+                    vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
+                    float d = q.x - min(q.w, q.y);
+                    float e = 1.0e-10;
+                    return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
+                }
+                vec3 hsv2rgb(vec3 c) {
+                    vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+                    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.w);
+                    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
                 }
             `
         };
@@ -250,13 +293,9 @@
         const composer = new EffectComposer(renderer);
         composer.addPass(new RenderPass(scene, camera));
         
-        const chaosPass = new ShaderPass(ChaosShader);
-        composer.addPass(chaosPass);
+        const existenceErosionPass = new ShaderPass(ExistenceErosionShader);
+        composer.addPass(existenceErosionPass);
         
-        const glitchPass = new GlitchPass(); // 補助的なGlitchPass
-        glitchPass.goWild = false;
-        composer.addPass(glitchPass);
-
 
         // --- 3. AUDIO FILE SYSTEM ---
         let audioCtx, analyser, dataArray, source;
@@ -270,7 +309,7 @@
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 analyser = audioCtx.createAnalyser();
-                analyser.fftSize = 2048; // より詳細な周波数解析
+                analyser.fftSize = 2048;
                 dataArray = new Uint8Array(analyser.frequencyBinCount);
 
                 source = audioCtx.createMediaElementSource(audioEl);
@@ -354,7 +393,7 @@
         });
 
         function startRecording() {
-            const canvasStream = renderer.domElement.captureStream(30); // Rendererから直接ストリームを取得
+            const canvasStream = renderer.domElement.captureStream(30);
             
             if (audioCtx && !audioEl.paused) {
                 const dest = audioCtx.createMediaStreamDestination();
@@ -374,7 +413,7 @@
                 const a = document.createElement('a');
                 a.style.display = 'none';
                 a.href = url;
-                a.download = 'vj_chaos_ritual_' + Date.now() + '.webm';
+                a.download = 'vj_existence_erosion_' + Date.now() + '.webm';
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
@@ -405,14 +444,13 @@
             const deltaTime = clock.getDelta();
             const time = clock.getElapsedTime();
 
-            let low = 0; // Bass
-            let mid = 0; // Mid
-            let high = 0; // Treble
+            let low = 0; 
+            let mid = 0; 
+            let high = 0; 
 
             if (analyser && !audioEl.paused) {
                 analyser.getByteFrequencyData(dataArray);
                 
-                // 周波数帯域をより細かく分割
                 const bassRange = dataArray.slice(0, 15);
                 const midRange = dataArray.slice(30, 80);
                 const trebleRange = dataArray.slice(100, 200);
@@ -426,26 +464,24 @@
             // VRM Update (回転速度・拡大縮小)
             if (currentVrm) {
                 currentVrm.update(deltaTime);
-                currentVrm.scene.rotation.y -= (0.005 + (low * 0.1) + (mid * 0.05)); // 低音・中音で回転加速
+                currentVrm.scene.rotation.y -= (0.005 + (low * 0.1) + (mid * 0.05));
                 
-                const scale = 1.0 + (low * 0.2); // 低音で大きく拡大
+                const scale = 1.0 + (low * 0.1); 
                 currentVrm.scene.scale.set(scale, scale, scale);
             }
 
             // Shader Uniforms Update
-            chaosPass.uniforms['time'].value = time;
-            chaosPass.uniforms['audioLow'].value = low;
-            chaosPass.uniforms['audioMid'].value = mid;
-            chaosPass.uniforms['audioHigh'].value = high;
-            chaosPass.uniforms['resolution'].value.set(window.innerWidth, window.innerHeight);
-
-            // GlitchPassの有効化 (高音のピークで激しく)
-            glitchPass.enabled = high > 0.8; 
+            existenceErosionPass.uniforms['time'].value = time;
+            existenceErosionPass.uniforms['audioLow'].value = low;
+            existenceErosionPass.uniforms['audioMid'].value = mid;
+            existenceErosionPass.uniforms['audioHigh'].value = high;
+            existenceErosionPass.uniforms['resolution'].value.set(window.innerWidth, window.innerHeight);
 
             // 画面振動 (Screen Shake)
-            if (low > 0.8) {
-                const shakeX = (Math.random() - 0.5) * low * 20;
-                const shakeY = (Math.random() - 0.5) * low * 20;
+            if (low > 0.8 || high > 0.8) {
+                const shakeIntensity = Math.max(low, high);
+                const shakeX = (Math.random() - 0.5) * shakeIntensity * 10;
+                const shakeY = (Math.random() - 0.5) * shakeIntensity * 10;
                 canvas.style.setProperty('--shake-x', `${shakeX}px`);
                 canvas.style.setProperty('--shake-y', `${shakeY}px`);
                 canvas.classList.add('screen-shake');
@@ -455,10 +491,10 @@
 
             // スポットライトの点滅 (高音のピークで激しく)
             spotLight.intensity = (high > 0.7) ? (15.0 + Math.random() * 10.0) : 15.0;
-            spotLight.color.setHex((high > 0.7 && Math.random() > 0.5) ? 0xff004c : 0x00ffcc); // 赤とシアンが入れ替わる
+            spotLight.color.setHex((high > 0.7 && Math.random() > 0.5) ? 0xff004c : 0x00ffff); // 赤とシアンが入れ替わる
 
             // 環境光の点滅 (低音のピークで激しく)
-            ambientLight.intensity = (low > 0.8) ? (0.5 + Math.random() * 0.5) : 0.5;
+            ambientLight.intensity = (low > 0.8) ? (0.7 + Math.random() * 0.3) : 0.7;
 
 
             composer.render();
