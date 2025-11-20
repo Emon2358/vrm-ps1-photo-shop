@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GHOST_PROTOCOL_VJ_V4_DESTRUCTION</title>
+    <title>GHOST_PROTOCOL_VJ_V4_FIXED</title>
     <link rel="icon" href="data:,">
 
     <style>
@@ -11,10 +11,10 @@
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
             background-color: #000000; overflow: hidden;
-            font-family: 'Press Start 2P', 'Courier New', Courier, monospace; /* レトロゲームフォントを想定 */
+            font-family: 'Courier New', Courier, monospace;
         }
 
-        /* 背景の砂嵐ノイズ (アバターが消えた時に見える) */
+        /* 背景の砂嵐ノイズ */
         .static-noise {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             opacity: 0.3; z-index: 0; pointer-events: none;
@@ -32,28 +32,19 @@
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 10; pointer-events: none;
             padding: 20px; box-sizing: border-box;
-            color: #00ff00; /* ターミナルグリーン */
-            text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;
+            color: #00ff00;
+            text-shadow: 0 0 5px #00ff00;
             background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 25%);
-            filter: saturate(150%);
         }
 
         h1 { 
             font-size: 1.6rem; margin: 0; letter-spacing: 5px; 
             border-bottom: 2px solid #00ff00; display: inline-block; background: rgba(0,0,0,0.8);
-            animation: textGlitch 0.5s infinite alternate;
-        }
-        @keyframes textGlitch {
-            0% { transform: translate(0,0); filter: hue-rotate(0deg); }
-            33% { transform: translate(1px, -1px); filter: hue-rotate(90deg); }
-            66% { transform: translate(-1px, 1px); filter: hue-rotate(180deg); }
-            100% { transform: translate(0,0); filter: hue-rotate(270deg); }
         }
 
         p { 
             font-size: 0.8rem; margin: 5px 0; background: rgba(0,0,0,0.8); display: inline-block; 
-            color: #00ffff; /* シアン */
-            text-shadow: 0 0 3px #00ffff;
+            color: #00ffff; text-shadow: 0 0 3px #00ffff;
         }
 
         /* Controls */
@@ -70,11 +61,10 @@
         }
         .cyber-btn:hover { background: #00ff00; color: #000; box-shadow: 0 0 15px #00ff00;}
         .cyber-btn.active { background: #00ff00; color: #fff; box-shadow: 0 0 20px #00ff00; }
-        .cyber-btn:disabled { opacity: 0.2; cursor: not-allowed; border-color: #555; color: #555; box-shadow: none;}
+        .cyber-btn:disabled { opacity: 0.2; cursor: not-allowed; border-color: #555; color: #555; }
 
-        /* 録画ボタン */
-        #btn-rec { border-color: #ff00ff; color: #ff00ff; box-shadow: 0 0 5px rgba(255,0,255,0.5);}
-        #btn-rec:hover { background: #ff00ff; color: #000; box-shadow: 0 0 15px #ff00ff; }
+        #btn-rec { border-color: #ff00ff; color: #ff00ff; }
+        #btn-rec:hover { background: #ff00ff; color: #000; }
         #btn-rec.active { background: #ff00ff; color: #fff; box-shadow: 0 0 20px #ff00ff; }
 
         #status-log {
@@ -82,18 +72,15 @@
             font-size: 0.7rem; color: #fff; white-space: pre;
             background: rgba(0,0,0,0.9); padding: 5px;
             border: 1px dashed #00ffff;
-            box-shadow: 0 0 5px #00ffff;
         }
 
-        /* 録画中インジケーター */
         #rec-indicator {
             display: none; position: absolute; top: 20px; right: 20px;
             color: #ff00ff; font-weight: bold; animation: blinkFast 0.1s infinite;
             background: rgba(0,0,0,0.8); padding: 5px; border: 2px solid #ff00ff;
             font-size: 1.4rem;
-            box-shadow: 0 0 10px #ff00ff;
         }
-        @keyframes blinkFast { 0% { opacity: 1; } 49% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 0; } }
+        @keyframes blinkFast { 0% { opacity: 1; } 50% { opacity: 0; } }
 
         input[type="file"] { display: none; }
     </style>
@@ -114,8 +101,8 @@
     <div id="ui-layer">
         <h1>V4.0: DESTRUCTION_PROTOCOL</h1>
         <div>
-            <p>>> VISUAL INTEGRITY: CRITICAL</p><br>
-            <p>>> AUDIO RESPONSE: HYPER_SENSITIVE</p>
+            <p>>> STATUS: REPAIRED</p><br>
+            <p>>> SHADER: COMPILED</p>
         </div>
 
         <div class="controls">
@@ -131,7 +118,7 @@
         </div>
 
         <div id="rec-indicator">!! REC !!</div>
-        <div id="status-log">SYSTEM BOOTING...</div>
+        <div id="status-log">SYSTEM READY. WAITING FOR INPUT...</div>
     </div>
 
     <canvas id="canvas"></canvas>
@@ -142,13 +129,12 @@
         import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
         import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
         import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
-        import { OutputPass } from 'three/addons/postprocessing/OutputPass.js'; // OutputPassをインポート
+        import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
         import { VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm';
 
-        // --- UTILS: Logger ---
         const logDiv = document.getElementById('status-log');
         const log = (msg) => { 
-            logDiv.innerText = `>> ${msg}\n` + logDiv.innerText.substring(0, Math.min(logDiv.innerText.length, 100)); 
+            logDiv.innerText = `>> ${msg}\n` + logDiv.innerText.substring(0, 100); 
             console.log(msg); 
         };
 
@@ -158,27 +144,26 @@
         scene.background = null; 
 
         const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 100.0);
-        camera.position.set(0, 1.4, 3.0); // アバターを少し見下ろす位置に
-        camera.lookAt(0, 1.0, 0); // 中央のアバターを見る
+        camera.position.set(0, 1.4, 3.0); 
+        camera.lookAt(0, 1.0, 0);
 
         const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, preserveDrawingBuffer: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-        // Light - より厳しく、サイバーパンクな照明に
-        const dirLight = new THREE.DirectionalLight(0xffffff, 1.5); // 全体的な明るさ
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
         dirLight.position.set(0.5, 2, 1).normalize();
         scene.add(dirLight);
         
-        const cyberRedLight = new THREE.PointLight(0xff0055, 10.0, 10); // 赤いアクセントライト
+        const cyberRedLight = new THREE.PointLight(0xff0055, 10.0, 10);
         cyberRedLight.position.set(-2, 1.5, 0);
         scene.add(cyberRedLight);
 
-        const cyberBlueLight = new THREE.PointLight(0x00ffff, 10.0, 10); // 青いアクセントライト
+        const cyberBlueLight = new THREE.PointLight(0x00ffff, 10.0, 10);
         cyberBlueLight.position.set(2, 1.5, 0);
         scene.add(cyberBlueLight);
 
-        // --- 2. DESTRUCTION SHADER ---
+        // --- 2. DESTRUCTION SHADER (FIXED) ---
         const V4DestructionShader = {
             uniforms: {
                 "tDiffuse": { value: null },
@@ -186,7 +171,7 @@
                 "audioLow": { value: 0.0 }, 
                 "audioMid": { value: 0.0 }, 
                 "audioHigh": { value: 0.0 },
-                "resolution": { value: new THREE.Vector2() }
+                "resolution": { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
             },
             vertexShader: `
                 varying vec2 vUv;
@@ -204,24 +189,9 @@
                 uniform vec2 resolution;
                 varying vec2 vUv;
 
+                // vec2を受け取る乱数関数
                 float random(vec2 st) {
                     return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
-                }
-
-                vec2 hash( vec2 p ) {
-                    p = vec2( dot(p,vec2(127.1,311.7)), dot(p,vec2(269.5,183.3)) );
-                    return -1.0 + 2.0 * fract(sin(p)*43758.5453123);
-                }
-
-                float noise( vec2 p ) {
-                    const float K = 0.5/sqrt(2.0);
-                    vec2 i = floor( p );
-                    vec2 f = p - i;
-                    vec2 u = f*f*(3.0-2.0*f);
-                    return mix( mix( dot( hash( i + vec2(0.0,0.0) ), f - vec2(0.0,0.0) ), 
-                                     dot( hash( i + vec2(1.0,0.0) ), f - vec2(1.0,0.0) ), u.x),
-                                mix( dot( hash( i + vec2(0.0,1.0) ), f - vec2(0.0,1.0) ), 
-                                     dot( hash( i + vec2(1.0,1.0) ), f - vec2(1.0,1.0) ), u.x), u.y);
                 }
 
                 void main() {
@@ -230,7 +200,7 @@
 
                     vec4 finalColor = texture2D(tDiffuse, p);
                     
-                    // 1. DATA MOSH GRID (Low) - グリッド状の分裂と破壊
+                    // 1. DATA MOSH GRID (Low)
                     float grid_intensity = audioLow * 0.2;
                     float grid_size = 50.0 + (audioLow * 200.0);
                     vec2 grid_p = floor(p * grid_size) / grid_size;
@@ -239,17 +209,20 @@
                     p.x += sin(grid_p.y * 10.0 + time * 10.0) * grid_offset;
                     p.y += cos(grid_p.x * 10.0 + time * 10.0) * grid_offset;
 
-                    // 2. SCANLINES & BLUR (Mid) - レトロCRT風
+                    // 2. SCANLINES & BLUR (Mid)
                     float scanline = sin(p.y * resolution.y * 2.0) * 0.05 + 0.95;
                     finalColor.rgb *= scanline;
 
                     float blur_amount = audioMid * 0.005;
-                    finalColor = texture2D(tDiffuse, p + vec2(blur_amount, blur_amount)) * 0.25 +
-                                 texture2D(tDiffuse, p + vec2(-blur_amount, blur_amount)) * 0.25 +
-                                 texture2D(tDiffuse, p + vec2(blur_amount, -blur_amount)) * 0.25 +
-                                 texture2D(tDiffuse, p + vec2(-blur_amount, -blur_amount)) * 0.25;
+                    // 簡易ブラー
+                    vec4 blurColor = texture2D(tDiffuse, p + vec2(blur_amount, blur_amount)) * 0.25 +
+                                     texture2D(tDiffuse, p + vec2(-blur_amount, blur_amount)) * 0.25 +
+                                     texture2D(tDiffuse, p + vec2(blur_amount, -blur_amount)) * 0.25 +
+                                     texture2D(tDiffuse, p + vec2(-blur_amount, -blur_amount)) * 0.25;
+                    
+                    finalColor = mix(finalColor, blurColor, audioMid);
 
-                    // 3. COLOR CHANNEL SHIFT & SORT (High) - RGBチャネルの激しいズレとピクセルソート
+                    // 3. COLOR CHANNEL SHIFT & SORT (High)
                     float shift_strength = audioHigh * 0.05;
                     float sort_strength = audioHigh * 0.1;
                     
@@ -262,31 +235,28 @@
                     // Pixel Sorting-like effect
                     float sort_noise = random(floor(coord / 10.0) + time);
                     if (sort_noise > 1.0 - sort_strength) {
-                        float sort_offset = (random(floor(p.y * 100.0) + time) - 0.5) * sort_strength * 2.0;
+                        // --- 修正箇所: floatをvec2に変換 ---
+                        float seed = floor(p.y * 100.0) + time;
+                        float sort_offset = (random(vec2(seed, 0.0)) - 0.5) * sort_strength * 2.0;
+                        // --------------------------------
                         shiftedColor = texture2D(tDiffuse, p + vec2(sort_offset, 0.0));
                     }
-                    finalColor = mix(finalColor, shiftedColor, 0.7); // 元の色と混ぜる
+                    finalColor = mix(finalColor, shiftedColor, 0.7);
 
-
-                    // 4. HEAVY DIGITAL NOISE & DOT PATTERN (Overall Loudness)
+                    // 4. HEAVY DIGITAL NOISE
                     float total_loudness = (audioLow + audioMid + audioHigh) / 3.0;
                     float noise_amount = random(p * time + total_loudness * 10.0) * 0.3 * total_loudness;
                     finalColor.rgb += noise_amount;
 
-                    float dot_pattern_size = 50.0 + (1.0 - total_loudness) * 200.0;
-                    if (mod(floor(p.x * dot_pattern_size) + floor(p.y * dot_pattern_size), 2.0) < 1.0) {
-                        finalColor.rgb *= (1.0 - total_loudness * 0.2); // 音が大きいとドットが濃くなる
-                    }
-
-                    // 5. EDGE HIGHLIGHT (Always, but more intense with audio)
+                    // 5. EDGE HIGHLIGHT
                     float edge_strength = 0.005 + total_loudness * 0.01;
                     vec4 edge_color = texture2D(tDiffuse, p);
                     vec4 dx = texture2D(tDiffuse, p + vec2(edge_strength, 0.0));
                     vec4 dy = texture2D(tDiffuse, p + vec2(0.0, edge_strength));
                     float edge = length(dx.rgb - edge_color.rgb) + length(dy.rgb - edge_color.rgb);
-                    finalColor.rgb += edge * (1.0 + total_loudness * 2.0); // エッジを強調
+                    finalColor.rgb += edge * (1.0 + total_loudness * 2.0);
 
-                    // 6. Color Invert (Low-Mid Pulse)
+                    // 6. Color Invert
                     if (audioLow > 0.6 && audioMid > 0.5 && random(vec2(time, 0.0)) > 0.85) {
                         finalColor.rgb = 1.0 - finalColor.rgb;
                     }
@@ -303,12 +273,11 @@
         destructionPass.uniforms['resolution'].value.set(window.innerWidth, window.innerHeight);
         composer.addPass(destructionPass);
 
-        // 必ず最後にOutputPassを追加して、カラー変換を適用する
         const outputPass = new OutputPass();
         composer.addPass(outputPass);
 
 
-        // --- 3. AUDIO FILE SYSTEM (ENHANCED) ---
+        // --- 3. AUDIO FILE SYSTEM ---
         let audioCtx, analyser, dataArray, source;
         let audioEl = new Audio();
         audioEl.loop = true; 
@@ -320,9 +289,9 @@
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 analyser = audioCtx.createAnalyser();
-                analyser.fftSize = 1024; // さらに解像度を上げて細かく取る
-                analyser.smoothingTimeConstant = 0.5; // 反応を極限まで鋭くする
-                dataArray = new Uint8Array(analyser.frequencyBinBinCount);
+                analyser.fftSize = 1024;
+                analyser.smoothingTimeConstant = 0.5;
+                dataArray = new Uint8Array(analyser.frequencyBinCount);
 
                 source = audioCtx.createMediaElementSource(audioEl);
                 source.connect(analyser);
@@ -347,12 +316,10 @@
                 audioEl.play();
                 playBtn.innerText = "PAUSE";
                 playBtn.classList.add('active');
-                log("PLAYING AUDIO...");
             } else {
                 audioEl.pause();
                 playBtn.innerText = "PLAY";
                 playBtn.classList.remove('active');
-                log("AUDIO PAUSED.");
             }
         });
 
@@ -373,16 +340,14 @@
                 currentVrm = vrm;
                 scene.add(vrm.scene);
                 
-                // ポーズはデフォルトのままか、少し中性的なポーズに
                 vrm.humanoid.getNormalizedBoneNode('leftUpperArm').rotation.z = 0.5;
                 vrm.humanoid.getNormalizedBoneNode('rightUpperArm').rotation.z = -0.5;
-                vrm.humanoid.getNormalizedBoneNode('spine').rotation.x = 0.1; // 少し胸を張る
+                vrm.humanoid.getNormalizedBoneNode('spine').rotation.x = 0.1;
 
-                log("VRM LOADED: " + (gltf.userData.vrm.meta.title || "Unknown VRM"));
-            }, undefined, (e) => log("VRM LOAD ERROR: " + e.message));
+                log("VRM LOADED.");
+            }, undefined, (e) => log("VRM ERROR: " + e));
         }
         
-        // Default VRM
         loadVRM('https://raw.githubusercontent.com/pixiv/three-vrm/master/packages/three-vrm/examples/models/VRM1_Constraint_Twist_Sample.vrm');
 
         document.getElementById('vrm-input').addEventListener('change', (e) => {
@@ -391,7 +356,7 @@
         });
 
 
-        // --- 5. RECORDER (High Bitrate) ---
+        // --- 5. RECORDER ---
         let mediaRecorder;
         let recordedChunks = [];
         const recBtn = document.getElementById('btn-rec');
@@ -410,7 +375,7 @@
                 canvasStream.addTrack(dest.stream.getAudioTracks()[0]);
             }
             
-            let options = { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 8000000, audioBitsPerSecond: 128000 }; // さらに高画質・高音質
+            let options = { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 8000000 };
             if (!MediaRecorder.isTypeSupported(options.mimeType)) options = { mimeType: 'video/webm' };
 
             mediaRecorder = new MediaRecorder(canvasStream, options);
@@ -421,19 +386,18 @@
                 const a = document.createElement('a');
                 a.style.display = 'none';
                 a.href = url;
-                a.download = 'vj_destruction_' + Date.now() + '.webm';
+                a.download = 'vj_fix_' + Date.now() + '.webm';
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
                 recordedChunks = [];
-                log("RECORDING SAVED.");
+                log("SAVED.");
             };
 
             mediaRecorder.start();
-            recBtn.innerText = "STOP REC";
+            recBtn.innerText = "STOP";
             recBtn.classList.add('active');
             recIndicator.style.display = 'block';
-            log("RECORDING IN PROGRESS...");
         }
 
         function stopRecording() {
@@ -444,7 +408,7 @@
         }
 
 
-        // --- 6. MAIN LOOP ---
+        // --- 6. LOOP ---
         const clock = new THREE.Clock();
 
         function animate() {
@@ -457,10 +421,9 @@
             if (analyser && !audioEl.paused) {
                 analyser.getByteFrequencyData(dataArray);
                 
-                // バンド帯域をより細かく分割 (fftSize=1024なのでbinCount=512)
-                const bassData = dataArray.slice(0, 30);      // 0-30Hz付近
-                const midData = dataArray.slice(30, 200);     // 30Hz-1kHz付近
-                const highData = dataArray.slice(200, 500);   // 1kHz-3kHz付近
+                const bassData = dataArray.slice(0, 30);
+                const midData = dataArray.slice(30, 200);
+                const highData = dataArray.slice(200, 500);
                 
                 const avg = (arr) => arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
                 
@@ -469,32 +432,18 @@
                 high = avg(highData) / 255.0;
             }
 
-            // VRM Animation - アバターを中央固定、ゆっくり回転
             if (currentVrm) {
                 currentVrm.update(deltaTime);
-                currentVrm.scene.rotation.y += 0.005; // ゆっくり回転
-                currentVrm.scene.position.set(0, 0, 0); // 中央に固定
-
-                // 音量に合わせて微調整
-                const breathScale = 1.0 + Math.sin(time * 2.0) * 0.01 + (low * 0.05); // 呼吸のような微動
-                currentVrm.scene.scale.set(breathScale, breathScale, breathScale);
-
-                // 顔の向きがランダムに切り替わる
-                if (Math.random() > 0.99) {
-                    currentVrm.humanoid.getNormalizedBoneNode('neck').rotation.y = (Math.random() - 0.5) * 0.5;
-                }
+                currentVrm.scene.rotation.y += 0.005; 
+                currentVrm.scene.position.set(0, 0, 0);
+                const breath = 1.0 + Math.sin(time * 2.0) * 0.01 + (low * 0.05);
+                currentVrm.scene.scale.set(breath, breath, breath);
             }
 
-            // Shader Uniforms Update
             destructionPass.uniforms['time'].value = time;
             destructionPass.uniforms['audioLow'].value = low;
             destructionPass.uniforms['audioMid'].value = mid;
             destructionPass.uniforms['audioHigh'].value = high;
-            
-            // カメラは固定
-            camera.position.x = 0;
-            camera.position.y = 1.4;
-            camera.lookAt(0, 1.0, 0);
 
             composer.render();
         }
