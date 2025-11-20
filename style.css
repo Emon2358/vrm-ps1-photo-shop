@@ -1,0 +1,95 @@
+/* Base Reset */
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    overflow: hidden; /* スクロール禁止 */
+    font-family: 'Courier New', Courier, monospace; /* ターミナルフォント */
+}
+
+#canvas {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+/* UI Layer - 映像の上に重ねる */
+#ui-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    pointer-events: none; /* UIの下のCanvas操作を邪魔しない */
+    padding: 20px;
+    box-sizing: border-box;
+    color: #0f0; /* ハッカーグリーン */
+    text-shadow: 0 0 5px #0f0;
+}
+
+/* Typography */
+h1 {
+    font-size: 1.2rem;
+    margin: 0;
+    letter-spacing: 2px;
+    border-bottom: 1px solid #0f0;
+    display: inline-block;
+}
+
+p {
+    font-size: 0.8rem;
+    margin: 5px 0;
+    opacity: 0.8;
+}
+
+/* Custom File Input */
+input[type="file"] {
+    display: none; /* デフォルトのダサいボタンを隠す */
+}
+
+.glitch-btn {
+    pointer-events: auto; /* ボタンはクリックできるように */
+    display: inline-block;
+    margin-top: 20px;
+    padding: 10px 20px;
+    border: 1px solid #0f0;
+    background: rgba(0, 20, 0, 0.8);
+    color: #0f0;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+
+.glitch-btn:hover {
+    background: #0f0;
+    color: #000;
+    box-shadow: 0 0 15px #0f0;
+}
+
+.footer {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    font-size: 0.7rem;
+    color: #555;
+}
+
+/* Scanline Effect (CSSでの走査線表現) */
+#ui-layer::after {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    z-index: 20;
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+}
