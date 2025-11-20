@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GHOST_PROTOCOL_VJ</title>
+    <title>nihonkokumin_VJ</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:,">
+
     <script type="importmap">
     {
         "imports": {
@@ -35,16 +37,15 @@
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
         import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
         import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-        import { GlitchPass } from 'three/addons/postprocessing/GlitchPass.js'; // 地下感を出す重要エフェクト
+        import { GlitchPass } from 'three/addons/postprocessing/GlitchPass.js'; 
         import { VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm';
 
         // --- 1. SCENE SETUP ---
         const canvas = document.getElementById('canvas');
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x050505); // ほぼ真っ黒
-        scene.fog = new THREE.FogExp2(0x050505, 0.02); // 霧で奥行きを隠す
+        scene.background = new THREE.Color(0x050505); 
+        scene.fog = new THREE.FogExp2(0x050505, 0.02); 
 
-        // Camera setup (あえて少し遠く、低めの位置から見上げる)
         const camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, 100.0);
         camera.position.set(0, 1.0, 4.0); 
 
@@ -52,24 +53,23 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
 
-        // Lighting (暗く、劇的に)
+        // Lighting
         const directionalLight = new THREE.DirectionalLight(0xffffff, 2.0);
         directionalLight.position.set(1, 1, 1).normalize();
         scene.add(directionalLight);
 
-        const spotLight = new THREE.SpotLight(0xff00ff, 5.0); // 紫の怪しい光
+        const spotLight = new THREE.SpotLight(0xff00ff, 5.0); 
         spotLight.position.set(-2, 2, 0);
         spotLight.lookAt(0, 1, 0);
         scene.add(spotLight);
 
-        // --- 2. POST PROCESSING (THE UNDERGROUND VIBE) ---
+        // --- 2. POST PROCESSING ---
         const composer = new EffectComposer(renderer);
         const renderPass = new RenderPass(scene, camera);
         composer.addPass(renderPass);
 
-        // Glitch Pass (時折激しく乱れる)
         const glitchPass = new GlitchPass();
-        glitchPass.goWild = false; // 常に激しいわけではない
+        glitchPass.goWild = false; 
         composer.addPass(glitchPass);
 
         // --- 3. VRM LOADER ---
@@ -88,31 +88,41 @@
                     }
 
                     const vrm = gltf.userData.vrm;
-                    VRMUtils.removeUnnecessaryWorkaround(vrm.scene);
+                    
+                    // --- 修正箇所: 古い関数呼び出しを削除 ---
+                    // VRMUtils.removeUnnecessaryWorkaround(vrm.scene); // 削除済み
+
+                    // VRM0.0のモデルを読み込んだ際に、VRM1.0準拠の向き(Y-up, Z-forward)に合わせる
                     VRMUtils.rotateVRM0(vrm);
                     
                     currentVrm = vrm;
                     scene.add(vrm.scene);
                     
-                    // 腕を少し下げる（Tポーズ回避・Aポーズへ）
+                    // 腕を少し下げる
                     vrm.humanoid.getNormalizedBoneNode('leftUpperArm').rotation.z = 1.2;
                     vrm.humanoid.getNormalizedBoneNode('rightUpperArm').rotation.z = -1.2;
 
-                    console.log("VRM LOADED");
+                    console.log("VRM LOADED SUCCESSFULLY");
                 },
-                (progress) => console.log('Loading...', 100.0 * (progress.loaded / progress.total) + '%'),
-                (error) => console.error(error)
+                (progress) => {
+                    // 進捗ログ
+                    console.log('Loading...', 100.0 * (progress.loaded / progress.total) + '%');
+                },
+                (error) => {
+                    console.error("VRM Loading Error:", error);
+                    alert("VRMの読み込みに失敗しました。コンソールを確認してください。");
+                }
             );
         }
 
-        // デフォルトでサンプルモデルを読み込む（動作確認用）
-        // Pixiv公式のサンプルモデルURL
+        // 初期モデル読み込み
         loadVRM('https://raw.githubusercontent.com/pixiv/three-vrm/master/packages/three-vrm/examples/models/VRM1_Constraint_Twist_Sample.vrm');
 
-        // ファイル入力の処理
+        // ファイル入力ハンドリング
         document.getElementById('vrm-input').addEventListener('change', (event) => {
             const file = event.target.files[0];
             if (!file) return;
+            
             const blob = new Blob([file], { type: "application/octet-stream" });
             const url = URL.createObjectURL(blob);
             loadVRM(url);
@@ -127,15 +137,11 @@
             const deltaTime = clock.getDelta();
 
             if (currentVrm) {
-                // update vrm physics/expression
                 currentVrm.update(deltaTime);
-                
-                // 【重要】永久回転ロジック
-                // Y軸（垂直軸）を中心にゆっくり回転
-                currentVrm.scene.rotation.y -= 0.005; // 速度調整はここ
+                // 永久回転
+                currentVrm.scene.rotation.y -= 0.005; 
             }
 
-            // 通常のrenderer.renderではなく、composerを使う（エフェクト適用のため）
             composer.render();
         }
 
