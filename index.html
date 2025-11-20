@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GHOST_PROTOCOL_VJ_V4_FIXED</title>
+    <title>GHOST_PROTOCOL_VJ_V5_LIQUID_WAVE</title>
     <link rel="icon" href="data:,">
 
     <style>
@@ -17,10 +17,10 @@
         /* 背景の砂嵐ノイズ */
         .static-noise {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            opacity: 0.3; z-index: 0; pointer-events: none;
+            opacity: 0.15; z-index: 0; pointer-events: none;
             background: url('https://media.giphy.com/media/oEI9uBYSzLpBK/giphy.gif');
             background-size: cover;
-            filter: grayscale(100%) contrast(300%) brightness(70%);
+            filter: grayscale(100%) contrast(200%);
         }
 
         #canvas {
@@ -32,19 +32,19 @@
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 10; pointer-events: none;
             padding: 20px; box-sizing: border-box;
-            color: #00ff00;
-            text-shadow: 0 0 5px #00ff00;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 25%);
+            color: #00ffcc; /* シアンに変更 */
+            text-shadow: 0 0 5px #00ffcc;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 30%);
         }
 
         h1 { 
             font-size: 1.6rem; margin: 0; letter-spacing: 5px; 
-            border-bottom: 2px solid #00ff00; display: inline-block; background: rgba(0,0,0,0.8);
+            border-bottom: 2px solid #00ffcc; display: inline-block; background: rgba(0,0,0,0.8);
         }
 
         p { 
             font-size: 0.8rem; margin: 5px 0; background: rgba(0,0,0,0.8); display: inline-block; 
-            color: #00ffff; text-shadow: 0 0 3px #00ffff;
+            color: #fff; text-shadow: 0 0 3px #fff;
         }
 
         /* Controls */
@@ -53,34 +53,34 @@
         }
 
         .cyber-btn {
-            padding: 10px 20px; border: 2px solid #00ff00; background: #000;
-            color: #00ff00; cursor: pointer; font-weight: bold; font-family: inherit;
+            padding: 10px 20px; border: 2px solid #00ffcc; background: #000;
+            color: #00ffcc; cursor: pointer; font-weight: bold; font-family: inherit;
             transition: 0.1s; text-transform: uppercase;
             min-width: 120px; text-align: center;
-            box-shadow: 0 0 5px rgba(0,255,0,0.5);
+            box-shadow: 0 0 5px rgba(0,255,204,0.3);
         }
-        .cyber-btn:hover { background: #00ff00; color: #000; box-shadow: 0 0 15px #00ff00;}
-        .cyber-btn.active { background: #00ff00; color: #fff; box-shadow: 0 0 20px #00ff00; }
+        .cyber-btn:hover { background: #00ffcc; color: #000; box-shadow: 0 0 20px #00ffcc;}
+        .cyber-btn.active { background: #00ffcc; color: #000; box-shadow: 0 0 25px #00ffcc; }
         .cyber-btn:disabled { opacity: 0.2; cursor: not-allowed; border-color: #555; color: #555; }
 
-        #btn-rec { border-color: #ff00ff; color: #ff00ff; }
-        #btn-rec:hover { background: #ff00ff; color: #000; }
-        #btn-rec.active { background: #ff00ff; color: #fff; box-shadow: 0 0 20px #ff00ff; }
+        #btn-rec { border-color: #ff0055; color: #ff0055; }
+        #btn-rec:hover { background: #ff0055; color: #000; }
+        #btn-rec.active { background: #ff0055; color: #fff; box-shadow: 0 0 20px #ff0055; }
 
         #status-log {
             position: absolute; bottom: 20px; left: 20px; 
             font-size: 0.7rem; color: #fff; white-space: pre;
             background: rgba(0,0,0,0.9); padding: 5px;
-            border: 1px dashed #00ffff;
+            border: 1px dashed #00ffcc;
         }
 
         #rec-indicator {
             display: none; position: absolute; top: 20px; right: 20px;
-            color: #ff00ff; font-weight: bold; animation: blinkFast 0.1s infinite;
-            background: rgba(0,0,0,0.8); padding: 5px; border: 2px solid #ff00ff;
+            color: #ff0055; font-weight: bold; animation: blinkFast 0.05s infinite;
+            background: rgba(0,0,0,0.8); padding: 5px; border: 2px solid #ff0055;
             font-size: 1.4rem;
         }
-        @keyframes blinkFast { 0% { opacity: 1; } 50% { opacity: 0; } }
+        @keyframes blinkFast { 0% { opacity: 1; } 50% { opacity: 0.3; } }
 
         input[type="file"] { display: none; }
     </style>
@@ -99,10 +99,10 @@
     <div class="static-noise"></div>
 
     <div id="ui-layer">
-        <h1>V4.0: DESTRUCTION_PROTOCOL</h1>
+        <h1>V5.0: LIQUID_WAVE_PROTOCOL</h1>
         <div>
-            <p>>> STATUS: REPAIRED</p><br>
-            <p>>> SHADER: COMPILED</p>
+            <p>>> SENSITIVITY: HYPER (RAW DATA)</p><br>
+            <p>>> EFFECT: HEAVY DISTORTION</p>
         </div>
 
         <div class="controls">
@@ -118,7 +118,7 @@
         </div>
 
         <div id="rec-indicator">!! REC !!</div>
-        <div id="status-log">SYSTEM READY. WAITING FOR INPUT...</div>
+        <div id="status-log">SYSTEM READY.</div>
     </div>
 
     <canvas id="canvas"></canvas>
@@ -143,35 +143,33 @@
         const scene = new THREE.Scene();
         scene.background = null; 
 
-        const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 100.0);
-        camera.position.set(0, 1.4, 3.0); 
-        camera.lookAt(0, 1.0, 0);
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100.0);
+        camera.position.set(0, 1.3, 2.8); 
+        camera.lookAt(0, 1.1, 0);
 
         const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, preserveDrawingBuffer: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-        const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
-        dirLight.position.set(0.5, 2, 1).normalize();
+        // Lighting
+        const dirLight = new THREE.DirectionalLight(0xffffff, 2.0);
+        dirLight.position.set(0, 1, 1).normalize();
         scene.add(dirLight);
         
-        const cyberRedLight = new THREE.PointLight(0xff0055, 10.0, 10);
-        cyberRedLight.position.set(-2, 1.5, 0);
-        scene.add(cyberRedLight);
+        const spotLight = new THREE.SpotLight(0x00ffcc, 15.0);
+        spotLight.position.set(0, 3, 3);
+        scene.add(spotLight);
 
-        const cyberBlueLight = new THREE.PointLight(0x00ffff, 10.0, 10);
-        cyberBlueLight.position.set(2, 1.5, 0);
-        scene.add(cyberBlueLight);
-
-        // --- 2. DESTRUCTION SHADER (FIXED) ---
-        const V4DestructionShader = {
+        // --- 2. LIQUID WAVE SHADER ---
+        // アバターを液体のようにぐにゃぐにゃにするシェーダー
+        const V5WaveShader = {
             uniforms: {
                 "tDiffuse": { value: null },
                 "time": { value: 0.0 },
                 "audioLow": { value: 0.0 }, 
                 "audioMid": { value: 0.0 }, 
                 "audioHigh": { value: 0.0 },
-                "resolution": { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+                "resolution": { value: new THREE.Vector2() }
             },
             vertexShader: `
                 varying vec2 vUv;
@@ -189,79 +187,64 @@
                 uniform vec2 resolution;
                 varying vec2 vUv;
 
-                // vec2を受け取る乱数関数
                 float random(vec2 st) {
                     return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
                 }
 
                 void main() {
                     vec2 p = vUv;
-                    vec2 coord = vUv * resolution;
-
-                    vec4 finalColor = texture2D(tDiffuse, p);
                     
-                    // 1. DATA MOSH GRID (Low)
-                    float grid_intensity = audioLow * 0.2;
-                    float grid_size = 50.0 + (audioLow * 200.0);
-                    vec2 grid_p = floor(p * grid_size) / grid_size;
+                    // --- 1. HYPER SENSITIVE WAVE (液状化) ---
+                    // 低音（Bass）: 大きくゆっくりとしたうねり
+                    float waveBass = sin(p.y * 5.0 + time * 10.0) * (audioLow * 0.15); // 感度高め
                     
-                    float grid_offset = random(grid_p * time * 5.0) * grid_intensity;
-                    p.x += sin(grid_p.y * 10.0 + time * 10.0) * grid_offset;
-                    p.y += cos(grid_p.x * 10.0 + time * 10.0) * grid_offset;
+                    // 高音（High）: 細かく速い振動（ビリビリ）
+                    float waveHigh = sin(p.y * 80.0 + time * 50.0) * (audioHigh * 0.03);
 
-                    // 2. SCANLINES & BLUR (Mid)
-                    float scanline = sin(p.y * resolution.y * 2.0) * 0.05 + 0.95;
-                    finalColor.rgb *= scanline;
+                    // 横揺れ適用
+                    p.x += waveBass + waveHigh;
 
-                    float blur_amount = audioMid * 0.005;
-                    // 簡易ブラー
-                    vec4 blurColor = texture2D(tDiffuse, p + vec2(blur_amount, blur_amount)) * 0.25 +
-                                     texture2D(tDiffuse, p + vec2(-blur_amount, blur_amount)) * 0.25 +
-                                     texture2D(tDiffuse, p + vec2(blur_amount, -blur_amount)) * 0.25 +
-                                     texture2D(tDiffuse, p + vec2(-blur_amount, -blur_amount)) * 0.25;
-                    
-                    finalColor = mix(finalColor, blurColor, audioMid);
+                    // 縦揺れ（中音域）
+                    p.y += cos(p.x * 10.0 + time * 15.0) * (audioMid * 0.05);
 
-                    // 3. COLOR CHANNEL SHIFT & SORT (High)
-                    float shift_strength = audioHigh * 0.05;
-                    float sort_strength = audioHigh * 0.1;
-                    
-                    vec4 shiftedColor;
-                    shiftedColor.r = texture2D(tDiffuse, p + vec2(shift_strength, 0.0)).r;
-                    shiftedColor.g = texture2D(tDiffuse, p + vec2(-shift_strength * 0.5, shift_strength * 0.5)).g;
-                    shiftedColor.b = texture2D(tDiffuse, p + vec2(0.0, -shift_strength)).b;
-                    shiftedColor.a = texture2D(tDiffuse, p).a;
 
-                    // Pixel Sorting-like effect
-                    float sort_noise = random(floor(coord / 10.0) + time);
-                    if (sort_noise > 1.0 - sort_strength) {
-                        // --- 修正箇所: floatをvec2に変換 ---
-                        float seed = floor(p.y * 100.0) + time;
-                        float sort_offset = (random(vec2(seed, 0.0)) - 0.5) * sort_strength * 2.0;
-                        // --------------------------------
-                        shiftedColor = texture2D(tDiffuse, p + vec2(sort_offset, 0.0));
-                    }
-                    finalColor = mix(finalColor, shiftedColor, 0.7);
-
-                    // 4. HEAVY DIGITAL NOISE
-                    float total_loudness = (audioLow + audioMid + audioHigh) / 3.0;
-                    float noise_amount = random(p * time + total_loudness * 10.0) * 0.3 * total_loudness;
-                    finalColor.rgb += noise_amount;
-
-                    // 5. EDGE HIGHLIGHT
-                    float edge_strength = 0.005 + total_loudness * 0.01;
-                    vec4 edge_color = texture2D(tDiffuse, p);
-                    vec4 dx = texture2D(tDiffuse, p + vec2(edge_strength, 0.0));
-                    vec4 dy = texture2D(tDiffuse, p + vec2(0.0, edge_strength));
-                    float edge = length(dx.rgb - edge_color.rgb) + length(dy.rgb - edge_color.rgb);
-                    finalColor.rgb += edge * (1.0 + total_loudness * 2.0);
-
-                    // 6. Color Invert
-                    if (audioLow > 0.6 && audioMid > 0.5 && random(vec2(time, 0.0)) > 0.85) {
-                        finalColor.rgb = 1.0 - finalColor.rgb;
+                    // --- 2. SHOCKWAVE (KICK DRUM) ---
+                    // 低音が強い時に画面中心から衝撃波
+                    if (audioLow > 0.5) {
+                        vec2 center = vec2(0.5, 0.5);
+                        float dist = distance(p, center);
+                        float shock = (1.0 - dist) * audioLow * 0.1;
+                        p -= (p - center) * shock; // 中心から外へ広げる
                     }
 
-                    gl_FragColor = finalColor;
+
+                    // --- 3. CHROMATIC ABERRATION (色ずれ) ---
+                    // 波打つタイミングで色もずらす
+                    float shift = (audioLow * 0.05) + (audioHigh * 0.03);
+                    vec4 color;
+                    
+                    // R, G, Bをそれぞれ違う波形でずらして取得
+                    color.r = texture2D(tDiffuse, p + vec2(shift, 0.0)).r;
+                    color.g = texture2D(tDiffuse, p).g;
+                    color.b = texture2D(tDiffuse, p - vec2(shift, 0.0)).b;
+                    color.a = texture2D(tDiffuse, p).a;
+
+
+                    // --- 4. NOISE & SCANLINES ---
+                    // アナログTVのようなノイズ
+                    float noise = random(p + time) * (audioHigh * 0.3);
+                    color.rgb += noise;
+                    
+                    // スキャンライン
+                    color.rgb -= sin(p.y * 800.0) * 0.1;
+
+                    // --- 5. FLASH (STROBE) ---
+                    // キックに合わせて明滅
+                    if (audioLow > 0.8) {
+                        color.rgb += 0.2;
+                    }
+
+                    gl_FragColor = color;
                 }
             `
         };
@@ -269,15 +252,15 @@
         const composer = new EffectComposer(renderer);
         composer.addPass(new RenderPass(scene, camera));
         
-        const destructionPass = new ShaderPass(V4DestructionShader);
-        destructionPass.uniforms['resolution'].value.set(window.innerWidth, window.innerHeight);
-        composer.addPass(destructionPass);
+        const wavePass = new ShaderPass(V5WaveShader);
+        wavePass.uniforms['resolution'].value.set(window.innerWidth, window.innerHeight);
+        composer.addPass(wavePass);
 
         const outputPass = new OutputPass();
         composer.addPass(outputPass);
 
 
-        // --- 3. AUDIO FILE SYSTEM ---
+        // --- 3. AUDIO FILE SYSTEM (HYPER SENSITIVE) ---
         let audioCtx, analyser, dataArray, source;
         let audioEl = new Audio();
         audioEl.loop = true; 
@@ -289,8 +272,8 @@
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 analyser = audioCtx.createAnalyser();
-                analyser.fftSize = 1024;
-                analyser.smoothingTimeConstant = 0.5;
+                analyser.fftSize = 2048; // 最高解像度
+                analyser.smoothingTimeConstant = 0.1; // 【重要】平滑化をほぼ無くし、生データに近くする（超敏感）
                 dataArray = new Uint8Array(analyser.frequencyBinCount);
 
                 source = audioCtx.createMediaElementSource(audioEl);
@@ -304,7 +287,7 @@
             if (!file) return;
             const url = URL.createObjectURL(file);
             audioEl.src = url;
-            log("AUDIO LOADED: " + file.name);
+            log("AUDIO LOADED");
             playBtn.disabled = false;
         });
 
@@ -340,12 +323,11 @@
                 currentVrm = vrm;
                 scene.add(vrm.scene);
                 
-                vrm.humanoid.getNormalizedBoneNode('leftUpperArm').rotation.z = 0.5;
-                vrm.humanoid.getNormalizedBoneNode('rightUpperArm').rotation.z = -0.5;
-                vrm.humanoid.getNormalizedBoneNode('spine').rotation.x = 0.1;
+                vrm.humanoid.getNormalizedBoneNode('leftUpperArm').rotation.z = 1.2;
+                vrm.humanoid.getNormalizedBoneNode('rightUpperArm').rotation.z = -1.2;
 
-                log("VRM LOADED.");
-            }, undefined, (e) => log("VRM ERROR: " + e));
+                log("VRM LOADED");
+            }, undefined, (e) => log("VRM ERROR"));
         }
         
         loadVRM('https://raw.githubusercontent.com/pixiv/three-vrm/master/packages/three-vrm/examples/models/VRM1_Constraint_Twist_Sample.vrm');
@@ -386,7 +368,7 @@
                 const a = document.createElement('a');
                 a.style.display = 'none';
                 a.href = url;
-                a.download = 'vj_fix_' + Date.now() + '.webm';
+                a.download = 'vj_liquid_' + Date.now() + '.webm';
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
@@ -421,29 +403,32 @@
             if (analyser && !audioEl.paused) {
                 analyser.getByteFrequencyData(dataArray);
                 
-                const bassData = dataArray.slice(0, 30);
-                const midData = dataArray.slice(30, 200);
-                const highData = dataArray.slice(200, 500);
+                const bassData = dataArray.slice(0, 20);
+                const midData = dataArray.slice(30, 150);
+                const highData = dataArray.slice(150, 400);
                 
                 const avg = (arr) => arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
                 
-                low = avg(bassData) / 255.0;
-                mid = avg(midData) / 255.0;
-                high = avg(highData) / 255.0;
+                // 感度を上げるために値をブースト
+                low = Math.min(1.0, (avg(bassData) / 255.0) * 1.2);
+                mid = Math.min(1.0, (avg(midData) / 255.0) * 1.2);
+                high = Math.min(1.0, (avg(highData) / 255.0) * 1.5); // 高音は特に反応しやすく
             }
 
             if (currentVrm) {
                 currentVrm.update(deltaTime);
-                currentVrm.scene.rotation.y += 0.005; 
+                currentVrm.scene.rotation.y += 0.005; // ゆっくり回転
                 currentVrm.scene.position.set(0, 0, 0);
-                const breath = 1.0 + Math.sin(time * 2.0) * 0.01 + (low * 0.05);
-                currentVrm.scene.scale.set(breath, breath, breath);
+                
+                // 物理的な拡大縮小も少し大げさに
+                const scale = 1.0 + (low * 0.2);
+                currentVrm.scene.scale.set(scale, scale, scale);
             }
 
-            destructionPass.uniforms['time'].value = time;
-            destructionPass.uniforms['audioLow'].value = low;
-            destructionPass.uniforms['audioMid'].value = mid;
-            destructionPass.uniforms['audioHigh'].value = high;
+            wavePass.uniforms['time'].value = time;
+            wavePass.uniforms['audioLow'].value = low;
+            wavePass.uniforms['audioMid'].value = mid;
+            wavePass.uniforms['audioHigh'].value = high;
 
             composer.render();
         }
@@ -455,7 +440,7 @@
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
             composer.setSize(window.innerWidth, window.innerHeight);
-            destructionPass.uniforms['resolution'].value.set(window.innerWidth, window.innerHeight);
+            wavePass.uniforms['resolution'].value.set(window.innerWidth, window.innerHeight);
         });
     </script>
 </body>
